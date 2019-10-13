@@ -1,0 +1,14 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <ItemGroup>
+    <PackageReference Include="GLFWDotNet" Version="19.8.0" />
+
+    <PackageReference Include="ImageDotNet" Version="19.1.0" />
+
+    <!--<ProjectReference Condition="$(MSBuildProjectName) != 'GLDotNet.Samples'"
+                      Include="$(MSBuildThisFileDirectory)GLDotNet.Samples\GLDotNet.Samples.csproj" />-->
+
+    <ProjectReference Include="$(RepositoryRootDirectory)src\ANGLEDotNet\ANGLEDotNet.csproj" />
+  </ItemGroup>
+</Project>
