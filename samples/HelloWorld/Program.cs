@@ -1,4 +1,6 @@
-﻿using System;
+﻿using GLFWDotNet.Utilities;
+using System;
+using static GLFWDotNet.GLFW;
 
 namespace HelloWorld
 {
@@ -6,7 +8,24 @@ namespace HelloWorld
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            if (!Application.Init())
+                return;
+
+            var window = new Window();
+            window.Title = "Hello World!";
+            window.MakeContextCurrent();
+
+            var keyboard = new Keyboard(window);
+
+            Application.Run(window, () =>
+            {
+                if (keyboard[Keys.Escape])
+                {
+                    window.Close();
+                }
+            });
+
+            Application.Terminate();
         }
     }
 }
