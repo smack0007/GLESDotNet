@@ -9,6 +9,8 @@ namespace GLGenerator
 {
     class Program
     {
+        public static readonly string AssemblyDirectory = Path.GetDirectoryName(typeof(Program).Assembly.Location) ?? "";
+
         class BaseData
         {
             public int VersionMajor { get; set; }
@@ -26,18 +28,18 @@ namespace GLGenerator
 
         class EnumData : BaseData
         {
-            public string Name { get; set; }
+            public string Name { get; set; } = "";
 
-            public string Value { get; set; }
+            public string Value { get; set; } = "";
 
             public override string ToString() => $"{Name}: {Value}";
         }
 
         class FunctionData : BaseData
         {
-            public string ReturnType { get; set; }
+            public string ReturnType { get; set; } = "";
 
-            public string Name { get; set; }
+            public string Name { get; set; } = "";
 
             public List<FunctionParamData> Params { get; } = new List<FunctionParamData>();
 
@@ -67,11 +69,11 @@ namespace GLGenerator
 
             public bool TypeOverridden { get; private set; } = false;
 
-            public string TypePrefix { get; set; }
+            public string? TypePrefix { get; set; }
 
-            public string Type { get; set; }
+            public string Type { get; set; } = "";
 
-            public string Name { get; set; }
+            public string Name { get; set; } = "";
 
             public bool UseForVoidPointerOverload { get; set; }
 
@@ -91,7 +93,7 @@ namespace GLGenerator
 
             public override string ToString() => $"{Type}: {Name}";
 
-            public void OverrideType(string type, string typePrefix = null)
+            public void OverrideType(string type, string? typePrefix = null)
             {
                 TypePrefix = typePrefix;
                 Type = type;
@@ -100,13 +102,14 @@ namespace GLGenerator
         }
 
         static void Main(string[] args)
-        {            
-            var lines = File.ReadAllLines(Path.Combine(Path.GetDirectoryName(typeof(Program).Assembly.Location), "gl2.h"));
+        {
+            GenerateGLES2();
+            GenerateEGL();
+        }
 
-            var enums = new List<EnumData>();
-            var functions = new List<FunctionData>();
-
-            Parse(lines, enums, functions);
+        private static void GenerateGLES2()
+        {
+            var (enums, functions) = Parse("gl2.h", "GL", "GL_APICALL", "GL_APIENTRY");
 
             //var glBufferData = functions.Single(x => x.Name == "glBufferData");
             //glBufferData.Params.Single(x => x.Name == "data").UseForVoidPointerOverload = true;
@@ -139,25 +142,51 @@ namespace GLGenerator
                 function.Params.Single(x => x.Name == "value").UseForByRefOverload = true;
             }
 
-            Write(enums, functions);
+            Write(
+                @"..\..\..\..\src\ANGLEDotNet\GLES2.cs",
+                "GLES2",
+                "libglesv2",
+                enums,
+                functions);
         }
 
-        private static void Parse(string[] lines, List<EnumData> enums, List<FunctionData> functions)
+        private static void GenerateEGL()
         {
+            var (enums, functions) = Parse("egl.h", "EGL", "EGLAPI", "EGLAPIENTRY");
+
+            Write(
+                @"..\..\..\..\src\ANGLEDotNet\EGL.cs",
+                "EGL",
+                "libegl",
+                enums,
+                functions);
+        }
+
+        private static (List<EnumData> Enums, List<FunctionData> Functions) Parse(
+            string inputPath,
+            string enumPrefix,
+            string functionApiCall,
+            string functionApiEntry)
+        {
+            var lines = File.ReadAllLines(Path.Combine(AssemblyDirectory, inputPath));
+
+            var enums = new List<EnumData>();
+            var functions = new List<FunctionData>();
+
             int versionMajor = 0;
             int versionMinor = 0;
 
             for (int i = 0; i < lines.Length; i++)
             {
-                if (lines[i].StartsWith("#ifndef GL_VERSION_"))
+                if (lines[i].StartsWith($"#ifndef {enumPrefix}_VERSION_"))
                 {
-                    var parts = lines[i].Substring("#ifndef GL_VERSION_".Length).Split('_');
+                    var parts = lines[i].Substring($"#ifndef {enumPrefix}_VERSION_".Length).Split('_');
                     versionMajor = int.Parse(parts[0]);
                     versionMinor = int.Parse(parts[1]);
                 }
-                else if (lines[i].StartsWith("#define GL_") &&
-                         !lines[i].StartsWith("#define GL_VERSION_") &&
-                         !lines[i].StartsWith("#define GL_APIENTRYP"))
+                else if (lines[i].StartsWith($"#define {enumPrefix}_") &&
+                         !lines[i].StartsWith($"#define {enumPrefix}_VERSION_") &&
+                         !lines[i].StartsWith($"#define {enumPrefix}_APIENTRYP"))
                 {
                     var parts = lines[i].Substring("#define ".Length).Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -169,11 +198,12 @@ namespace GLGenerator
                         Value = parts[1].Trim()
                     });
                 }
-                else if (lines[i].StartsWith("GL_APICALL ") && lines[i].Contains("GL_APIENTRY"))
+                else if (lines[i].StartsWith($"{functionApiCall} ") && lines[i].Contains(functionApiEntry))
                 {
-                    var parts = lines[i].Substring("GL_APICALL ".Length)
+                    var parts = lines[i].Substring($"{functionApiCall} ".Length)
                         .Replace("const GLubyte *GL_APIENTRY", "IntPtr")
-                        .Replace("GL_APIENTRY", "")
+                        .Replace("const char *EGLAPIENTRY", "string")
+                        .Replace(functionApiEntry, "")
                         .Replace("*const*", "**")
                         .Trim(';')
                         .Split(new char[] { ' ', ',', '(', ')' }, StringSplitOptions.RemoveEmptyEntries);
@@ -233,15 +263,19 @@ namespace GLGenerator
 
                     functions.Add(function);
                 }
-
-                if (lines[i].StartsWith("#endif /* GL_VERSION_4_6 */"))
-                    break;
             }
+
+            return (enums, functions);
         }
 
-        private static void Write(List<EnumData> enums, List<FunctionData> functions)
+        private static void Write(
+            string outputPath,
+            string className,
+            string library,
+            List<EnumData> enums,
+            List<FunctionData> functions)
         {
-            string[] license = File.ReadAllLines(Path.Combine(Path.GetDirectoryName(typeof(Program).Assembly.Location), "License.txt"));
+            string[] license = File.ReadAllLines(Path.Combine(AssemblyDirectory, "License.txt"));
 
             StringBuilder sb = new StringBuilder(1024);
 
@@ -256,10 +290,12 @@ namespace GLGenerator
             sb.AppendLine("using System.Runtime.InteropServices;");
             sb.AppendLine("using System.Text;");
             sb.AppendLine();
-            sb.AppendLine("namespace GLDotNet");
+            sb.AppendLine("namespace ANGLEDotNet");
             sb.AppendLine("{");
-            sb.AppendLine("\tpublic static unsafe partial class GL");
+            sb.AppendLine($"\tpublic static unsafe partial class {className}");
             sb.AppendLine("\t{");
+            sb.AppendLine($"\t\tpublic const string Library = \"{library}\";");
+            sb.AppendLine();
 
             foreach (var @enum in enums.OrderBy(x => x.Name))
             {
@@ -279,124 +315,61 @@ namespace GLGenerator
                     type = "uint";
                 }
 
+                if (value.StartsWith("EGL_CAST("))
+                {
+                    int index = value.LastIndexOf(',') + 1;
+                    value = value.Substring(index, value.Length - index - 1);
+                }
+
+                // Chop off the "u" if we have a negative value.
+                if (value.StartsWith("-"))
+                    type = type.Substring("u".Length);
+
                 sb.AppendLine($"\t\tpublic const {type} {name} = {value};");
             }
 
             sb.AppendLine();
 
-            sb.AppendLine("\t\tpublic delegate void glDebugProc(uint source, uint type, uint id, uint severity, int length, string message, IntPtr userParam);");
-            sb.AppendLine();
-
-            sb.AppendLine($"\t\tpublic static class Delegates");
-            sb.AppendLine("\t\t{");
-
-            var orderedFunctions = functions.OrderBy(x => x.Name);
-
-            foreach (var function in orderedFunctions)
-            {
-                string parameters = string.Join(", ", function.Params.Select(x => GetParamType(x) + " " + GetParamName(x.Name)));
-
-                sb.AppendLine($"\t\t\tpublic delegate {GetReturnType(function.ReturnType)} {function.Name}({parameters});");
-                sb.AppendLine();
-            }
-
-            sb.AppendLine("\t\t}");
-            sb.AppendLine();
-
-            sb.AppendLine($"\t\tpublic static class Functions");
-            sb.AppendLine("\t\t{");
-
-            foreach (var function in orderedFunctions)
-            {
-                sb.AppendLine($"\t\t\tpublic static Delegates.{function.Name} {function.Name} {{ get; set; }}");
-                sb.AppendLine();
-            }
-
-            sb.AppendLine("\t\t}");
-            sb.AppendLine();
-
-            sb.AppendLine("#if !GLDOTNET_EXCLUDE_GLINIT");
-            sb.AppendLine("\t\tpublic static void glInit(Func<string, IntPtr> getProcAddress, int versionMajor, int versionMinor)");
-            sb.AppendLine("\t\t{");
-            sb.AppendLine("\t\t\tif (getProcAddress == null) throw new ArgumentNullException(nameof(getProcAddress));");
-            sb.AppendLine();
-            sb.AppendLine("\t\t\tT getProc<T>(string name) => Marshal.GetDelegateForFunctionPointer<T>(getProcAddress(name));");
-            sb.AppendLine();
-
-            void AppendLoadDelegate(string indent, FunctionData function)
-            {
-                sb.AppendLine($"{indent}Functions.{function.Name} = getProc<Delegates.{function.Name}>(\"{function.Name}\");");
-            }
-
-            int versionMajor = -1;
-            int versionMinor = -1;
-
-            foreach (var function in functions.OrderBy(x => x.VersionMajor).ThenBy(x => x.VersionMinor).ThenBy(x => x.Name))
-            {
-                if (versionMajor != function.VersionMajor || versionMinor != function.VersionMinor)
-                {
-                    if (versionMajor != -1)
-                    {
-                        sb.AppendLine("\t\t\t}");
-                        sb.AppendLine();
-                    }
-
-                    versionMajor = function.VersionMajor;
-                    versionMinor = function.VersionMinor;
-
-                    sb.AppendLine($"\t\t\tif (versionMajor > {versionMajor} || (versionMajor == {versionMajor} && versionMinor >= {versionMinor}))");
-                    sb.AppendLine("\t\t\t{");
-                }
-
-                AppendLoadDelegate("\t\t\t\t", function);
-            }
-
-            sb.AppendLine("\t\t\t}");
-            sb.AppendLine("\t\t}");
-            sb.AppendLine("#endif");
-            sb.AppendLine();
-
-            foreach (var function in orderedFunctions)
+            foreach (var function in functions.OrderBy(x => x.Name))
             {
                 string returnType = GetReturnType(function.ReturnType);
                 string parameters = string.Join(", ", function.Params.Select(x => GetParamType(x) + " " + GetParamName(x.Name)));
-                string parameterNames = string.Join(", ", function.Params.Select(x => GetParamName(x.Name)));
 
-                sb.AppendLine($"\t\tpublic static {returnType} {function.Name}({parameters})");
-                sb.AppendLine("\t\t{");
-
-                if (returnType != "void")
-                {
-                    sb.AppendLine($"\t\t\treturn Functions.{function.Name}({parameterNames});");
-                }
-                else
-                {
-                    sb.AppendLine($"\t\t\tFunctions.{function.Name}({parameterNames});");
-                }
-
-                sb.AppendLine("\t\t}");
+                sb.AppendLine($"\t\t[DllImport(Library, EntryPoint = \"{function.Name}\")]");
+                sb.AppendLine($"\t\tpublic static extern {returnType} {function.Name}({parameters});");
                 sb.AppendLine();
             }
 
             sb.AppendLine("\t}");
             sb.AppendLine("}");
 
-            string fullPath = Path.GetFullPath(@"..\..\..\..\src\ANGLEDotNet\GLES2.cs");
-            File.WriteAllText(fullPath, sb.ToString());
+            File.WriteAllText(Path.GetFullPath(outputPath), sb.ToString());
         }
 
         private static string GetReturnType(string returnType)
         {
             switch (returnType)
             {
+                case "__eglMustCastToProperFunctionPointerType":
+                case "EGLContext":
+                case "EGLDisplay":
+                case "EGLImage":
+                case "EGLSurface":
+                case "EGLSync":
+                    returnType = "IntPtr";
+                    break;
+
+                case "EGLBoolean":
                 case "GLboolean":
                     returnType = "bool";
                     break;
 
+                case "EGLenum":
                 case "GLenum":
                     returnType = "uint";
                     break;
 
+                case "EGLint":
                 case "GLint":
                     returnType = "int";
                     break;
@@ -422,6 +395,29 @@ namespace GLGenerator
             {
                 switch (param.Type)
                 {
+                    case "EGLClientBuffer":
+                    case "EGLConfig":
+                    case "EGLContext":
+                    case "EGLDisplay":
+                    case "EGLImage":
+                    case "EGLNativeDisplayType":
+                    case "EGLNativePixmapType":
+                    case "EGLNativeWindowType":
+                    case "EGLSurface":
+                    case "EGLSync":
+                        type = "IntPtr";
+                        break;
+
+                    case "EGLTime":
+                        type = "ulong";
+                        break;
+
+                    case "EGLAttrib*":
+                    case "EGLConfig*":
+                        type = "out IntPtr";
+                        break;
+
+                    case "EGLBoolean":
                     case "GLboolean":
                         type = "bool";
                         break;
@@ -473,6 +469,7 @@ namespace GLGenerator
                         type = "float*";
                         break;
 
+                    case "EGLint":
                     case "GLint":
                     case "GLsizei":
                     case "GLintptr":
@@ -480,6 +477,7 @@ namespace GLGenerator
                         type = "int";
                         break;
 
+                    case "EGLint*":
                     case "GLint*":
                     case "GLsizei*":
                     case "GLintptr*":
@@ -526,6 +524,7 @@ namespace GLGenerator
                         type = "short*";
                         break;
 
+                    case "EGLenum":
                     case "GLbitfield":
                     case "GLenum":
                     case "GLuint":
