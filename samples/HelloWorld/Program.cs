@@ -2,11 +2,15 @@
 using System;
 using static GLFWDotNet.GLFW;
 using static ANGLEDotNet.EGL;
+using System.Runtime.InteropServices;
 
 namespace HelloWorld
 {
     unsafe class Program
     {
+        [DllImport("glfw3.dll")]
+        private static extern IntPtr glfwGetWin32Window(IntPtr window);
+        
         static void Main(string[] args)
         {
             if (!Application.Init())
@@ -14,9 +18,8 @@ namespace HelloWorld
 
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-            CreateContext();
-
             var window = new Window();
+            CreateContext(window);
             window.Title = "Hello World!";
 
             var keyboard = new Keyboard(window);
@@ -32,7 +35,7 @@ namespace HelloWorld
             Application.Terminate();
         }
 
-        private static void CreateContext()
+        private static void CreateContext(Window window)
         {
             var display = eglGetDisplay((IntPtr)EGL_DEFAULT_DISPLAY);
 
@@ -49,36 +52,38 @@ namespace HelloWorld
                 throw new InvalidOperationException();
             }
 
-            //int[] configAttributes = new int[]
-            //{
-            //    EGL.RED_SIZE, 8,
-            //    EGL.GREEN_SIZE, 8,
-            //    EGL.BLUE_SIZE, 8,
-            //    EGL.ALPHA_SIZE, 8,
-            //    EGL.DEPTH_SIZE, 24,
-            //    EGL.STENCIL_SIZE, 8,
-            //    EGL.SAMPLE_BUFFERS, EGL.DONT_CARE,
-            //    EGL.NONE
-            //};
+            int[] configAttributes = new int[]
+            {
+                (int)EGL_RED_SIZE, 8,
+                (int)EGL_GREEN_SIZE, 8,
+                (int)EGL_BLUE_SIZE, 8,
+                (int)EGL_ALPHA_SIZE, 8,
+                (int)EGL_DEPTH_SIZE, 24,
+                (int)EGL_STENCIL_SIZE, 8,
+                (int)EGL_SAMPLE_BUFFERS, unchecked((int)EGL_DONT_CARE),
+                (int)EGL_NONE
+            };
 
-            //IntPtr config;
-            //int configCount;
-            //if (!EGL.ChooseConfig(display, configAttributes, out config, 1, out configCount) || (configCount != 1))
-            //{
-            //    throw new Exception();
-            //}
+            IntPtr config;
+            int configCount;
+            if (!eglChooseConfig(display, configAttributes, out config, 1, out configCount) || (configCount != 1))
+            {
+                throw new InvalidOperationException();
+            }
 
-            //int[] surfaceAttributes = new int[]
-            //{
-            //    EGL.NONE, EGL.NONE,
-            //};
+            int[] surfaceAttributes = new int[]
+            {
+                (int)EGL_NONE, (int)EGL_NONE,
+            };
 
-            //surface = EGL.CreateWindowSurface(display, config, this.Handle, surfaceAttributes);
-            //if (surface == IntPtr.Zero)
-            //{
-            //    EGL.GetError(); // Clear error and try again
-            //    surface = EGL.CreateWindowSurface(display, config, IntPtr.Zero, null);
-            //}
+            IntPtr surface;
+            surface = eglCreateWindowSurface(display, config, glfwGetWin32Window(window.Handle), surfaceAttributes);
+
+            if (surface == IntPtr.Zero)
+            {
+                eglGetError(); // Clear error and try again
+                surface = eglCreateWindowSurface(display, config, IntPtr.Zero, null);
+            }
 
             //if (EGL.GetError() != EGL.SUCCESS)
             //{

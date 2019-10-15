@@ -323,7 +323,7 @@ namespace GLGenerator
 
                 // Chop off the "u" if we have a negative value.
                 if (value.StartsWith("-"))
-                    type = type.Substring("u".Length);
+                    value = $"unchecked((uint){value})";
 
                 sb.AppendLine($"\t\tpublic const {type} {name} = {value};");
             }

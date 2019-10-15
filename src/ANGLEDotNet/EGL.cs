@@ -78,7 +78,7 @@ namespace ANGLEDotNet
 		public const uint EGL_DEFAULT_DISPLAY = 0;
 		public const uint EGL_DEPTH_SIZE = 0x3025;
 		public const uint EGL_DISPLAY_SCALING = 10000;
-		public const int EGL_DONT_CARE = -1;
+		public const uint EGL_DONT_CARE = unchecked((uint)-1);
 		public const uint EGL_DRAW = 0x3059;
 		public const uint EGL_EGL_PROTOTYPES = 1;
 		public const uint EGL_EXTENSIONS = 0x3055;
@@ -179,7 +179,7 @@ namespace ANGLEDotNet
 		public const uint EGL_TRANSPARENT_RGB = 0x3052;
 		public const uint EGL_TRANSPARENT_TYPE = 0x3034;
 		public const uint EGL_TRUE = 1;
-		public const int EGL_UNKNOWN = -1;
+		public const uint EGL_UNKNOWN = unchecked((uint)-1);
 		public const uint EGL_UNSIGNALED = 0x30F3;
 		public const uint EGL_VENDOR = 0x3053;
 		public const uint EGL_VERSION = 0x3054;
@@ -202,7 +202,7 @@ namespace ANGLEDotNet
 		public static extern bool eglBindTexImage(IntPtr dpy, IntPtr surface, int buffer);
 
 		[DllImport(Library, EntryPoint = "eglChooseConfig")]
-		public static extern bool eglChooseConfig(IntPtr dpy, int* attrib_list, out IntPtr configs, int config_size, int* num_config);
+		public static extern bool eglChooseConfig(IntPtr dpy, int[] attrib_list, out IntPtr configs, int config_size, out int num_config);
 
 		[DllImport(Library, EntryPoint = "eglClientWaitSync")]
 		public static extern int eglClientWaitSync(IntPtr dpy, IntPtr sync, int flags, ulong timeout);
@@ -235,7 +235,7 @@ namespace ANGLEDotNet
 		public static extern IntPtr eglCreateSync(IntPtr dpy, uint type, out IntPtr attrib_list);
 
 		[DllImport(Library, EntryPoint = "eglCreateWindowSurface")]
-		public static extern IntPtr eglCreateWindowSurface(IntPtr dpy, IntPtr config, IntPtr win, int* attrib_list);
+		public static extern IntPtr eglCreateWindowSurface(IntPtr dpy, IntPtr config, IntPtr win, int[] attrib_list);
 
 		[DllImport(Library, EntryPoint = "eglDestroyContext")]
 		public static extern bool eglDestroyContext(IntPtr dpy, IntPtr ctx);
