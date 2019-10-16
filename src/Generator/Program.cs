@@ -414,7 +414,7 @@ namespace GLGenerator
 
                     case "EGLAttrib*":
                     case "EGLConfig*":
-                        type = "out IntPtr";
+                        type = "IntPtr*";
                         break;
 
                     case "EGLBoolean":

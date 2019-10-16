@@ -2,6 +2,7 @@
 using System;
 using static GLFWDotNet.GLFW;
 using static ANGLEDotNet.EGL;
+using static ANGLEDotNet.GLES2;
 using System.Runtime.InteropServices;
 
 namespace HelloWorld
@@ -16,23 +17,27 @@ namespace HelloWorld
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
             var window = new Window();
-            CreateContext(window);
-            window.Title = "Hello World!";
+            var (display, surface) = CreateContext(window);
 
             var keyboard = new Keyboard(window);
 
             Application.Run(window, () =>
             {
                 if (keyboard[Keys.Escape])
-                {
+                { 
                     window.Close();
+                    return;
                 }
+
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+                eglSwapBuffers(display, surface);
             });
 
             Application.Terminate();
         }
 
-        private static void CreateContext(Window window)
+        private static (IntPtr Display, IntPtr Surface) CreateContext(Window window)
         {
             var display = eglGetDisplay((IntPtr)EGL_DEFAULT_DISPLAY);
 
@@ -63,9 +68,12 @@ namespace HelloWorld
 
             IntPtr config;
             int configCount;
-            if (!eglChooseConfig(display, configAttributes, out config, 1, out configCount) || (configCount != 1))
+            fixed (int* configAttributesPtr = configAttributes)
             {
-                throw new InvalidOperationException();
+                if (!eglChooseConfig(display, configAttributesPtr, &config, 1, &configCount) || (configCount != 1))
+                {
+                    throw new InvalidOperationException();
+                }
             }
 
             int[] surfaceAttributes = new int[]
@@ -74,7 +82,10 @@ namespace HelloWorld
             };
 
             IntPtr surface;
-            surface = eglCreateWindowSurface(display, config, window.GetNativeHandle(), surfaceAttributes);
+            fixed (int* surfaceAttribtuesPtr = surfaceAttributes)
+            {
+                surface = eglCreateWindowSurface(display, config, window.GetNativeHandle(), surfaceAttribtuesPtr);
+            }
 
             if (surface == IntPtr.Zero)
             {
@@ -82,38 +93,46 @@ namespace HelloWorld
                 surface = eglCreateWindowSurface(display, config, IntPtr.Zero, null);
             }
 
-            //if (EGL.GetError() != EGL.SUCCESS)
-            //{
-            //    throw new Exception();
-            //}
+            if (eglGetError() != EGL_SUCCESS)
+            {
+                throw new InvalidOperationException();
+            }
 
-            //int[] contextAttibutes = new int[]
-            //{
-            //    EGL.CONTEXT_CLIENT_VERSION, 2,
-            //    EGL.NONE
-            //};
+            int[] contextAttibutes = new int[]
+            {
+                (int)EGL_CONTEXT_CLIENT_VERSION, 2,
+                (int)EGL_NONE
+            };
 
-            //IntPtr context = EGL.CreateContext(display, config, IntPtr.Zero, contextAttibutes);
-            //if (EGL.GetError() != EGL.SUCCESS)
-            //{
-            //    throw new Exception();
-            //}
+            IntPtr context;
+            fixed (int* contextAttributesPtr = contextAttibutes)
+            {
+                context = eglCreateContext(display, config, IntPtr.Zero, contextAttributesPtr);
+                if (eglGetError() != EGL_SUCCESS)
+                {
+                    throw new InvalidOperationException();
+                }
+            }
 
-            //EGL.MakeCurrent(display, surface, surface, context);
-            //if (EGL.GetError() != EGL.SUCCESS)
-            //{
-            //    throw new Exception();
-            //}
+            eglMakeCurrent(display, surface, surface, context);
+            if (eglGetError() != EGL_SUCCESS)
+            {
+                throw new InvalidOperationException();
+            }
 
-            ////// Turn off vsync
-            //EGL.SwapInterval(display, 0);
+            // Turn off vsync
+            eglSwapInterval(display, 0);
 
-            //GLES.ClearColor(1.0f, 0, 0, 1.0f);
+            glClearColor(1.0f, 0, 0, 1.0f);
 
-            //string text = "RENDERER: " + GLES.GetString(GLES.RENDERER) + Environment.NewLine;
-            //text += "VENDOR: " + GLES.GetString(GLES.VENDOR) + Environment.NewLine;
-            //text += "VERSION: " + GLES.GetString(GLES.VERSION) + Environment.NewLine;
-            //text += "EXTENSIONS: " + Environment.NewLine + GLES.GetString(GLES.EXTENSIONS);
+            string title = "RENDERER: " + Marshal.PtrToStringAnsi(glGetString(GL_RENDERER)) + " ";
+            title += "VENDOR: " + Marshal.PtrToStringAnsi(glGetString(GL_VENDOR)) + " ";
+            title += "VERSION: " + Marshal.PtrToStringAnsi(glGetString(GL_VERSION));
+            //text += "EXTENSIONS: " + Environment.NewLine + glGetString(GL_EXTENSIONS);
+
+            window.Title = title;
+
+            return (display, surface);
         }
     }
 }

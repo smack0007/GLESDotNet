@@ -202,7 +202,7 @@ namespace ANGLEDotNet
 		public static extern bool eglBindTexImage(IntPtr dpy, IntPtr surface, int buffer);
 
 		[DllImport(Library, EntryPoint = "eglChooseConfig")]
-		public static extern bool eglChooseConfig(IntPtr dpy, int[] attrib_list, out IntPtr configs, int config_size, out int num_config);
+		public static extern bool eglChooseConfig(IntPtr dpy, int* attrib_list, IntPtr* configs, int config_size, int* num_config);
 
 		[DllImport(Library, EntryPoint = "eglClientWaitSync")]
 		public static extern int eglClientWaitSync(IntPtr dpy, IntPtr sync, int flags, ulong timeout);
@@ -214,7 +214,7 @@ namespace ANGLEDotNet
 		public static extern IntPtr eglCreateContext(IntPtr dpy, IntPtr config, IntPtr share_context, int* attrib_list);
 
 		[DllImport(Library, EntryPoint = "eglCreateImage")]
-		public static extern IntPtr eglCreateImage(IntPtr dpy, IntPtr ctx, uint target, IntPtr buffer, out IntPtr attrib_list);
+		public static extern IntPtr eglCreateImage(IntPtr dpy, IntPtr ctx, uint target, IntPtr buffer, IntPtr* attrib_list);
 
 		[DllImport(Library, EntryPoint = "eglCreatePbufferFromClientBuffer")]
 		public static extern IntPtr eglCreatePbufferFromClientBuffer(IntPtr dpy, uint buftype, IntPtr buffer, IntPtr config, int* attrib_list);
@@ -226,16 +226,16 @@ namespace ANGLEDotNet
 		public static extern IntPtr eglCreatePixmapSurface(IntPtr dpy, IntPtr config, IntPtr pixmap, int* attrib_list);
 
 		[DllImport(Library, EntryPoint = "eglCreatePlatformPixmapSurface")]
-		public static extern IntPtr eglCreatePlatformPixmapSurface(IntPtr dpy, IntPtr config, void* native_pixmap, out IntPtr attrib_list);
+		public static extern IntPtr eglCreatePlatformPixmapSurface(IntPtr dpy, IntPtr config, void* native_pixmap, IntPtr* attrib_list);
 
 		[DllImport(Library, EntryPoint = "eglCreatePlatformWindowSurface")]
-		public static extern IntPtr eglCreatePlatformWindowSurface(IntPtr dpy, IntPtr config, void* native_window, out IntPtr attrib_list);
+		public static extern IntPtr eglCreatePlatformWindowSurface(IntPtr dpy, IntPtr config, void* native_window, IntPtr* attrib_list);
 
 		[DllImport(Library, EntryPoint = "eglCreateSync")]
-		public static extern IntPtr eglCreateSync(IntPtr dpy, uint type, out IntPtr attrib_list);
+		public static extern IntPtr eglCreateSync(IntPtr dpy, uint type, IntPtr* attrib_list);
 
 		[DllImport(Library, EntryPoint = "eglCreateWindowSurface")]
-		public static extern IntPtr eglCreateWindowSurface(IntPtr dpy, IntPtr config, IntPtr win, int[] attrib_list);
+		public static extern IntPtr eglCreateWindowSurface(IntPtr dpy, IntPtr config, IntPtr win, int* attrib_list);
 
 		[DllImport(Library, EntryPoint = "eglDestroyContext")]
 		public static extern bool eglDestroyContext(IntPtr dpy, IntPtr ctx);
@@ -253,7 +253,7 @@ namespace ANGLEDotNet
 		public static extern bool eglGetConfigAttrib(IntPtr dpy, IntPtr config, int attribute, int* value);
 
 		[DllImport(Library, EntryPoint = "eglGetConfigs")]
-		public static extern bool eglGetConfigs(IntPtr dpy, out IntPtr configs, int config_size, int* num_config);
+		public static extern bool eglGetConfigs(IntPtr dpy, IntPtr* configs, int config_size, int* num_config);
 
 		[DllImport(Library, EntryPoint = "eglGetCurrentContext")]
 		public static extern IntPtr eglGetCurrentContext();
@@ -271,13 +271,13 @@ namespace ANGLEDotNet
 		public static extern int eglGetError();
 
 		[DllImport(Library, EntryPoint = "eglGetPlatformDisplay")]
-		public static extern IntPtr eglGetPlatformDisplay(uint platform, void* native_display, out IntPtr attrib_list);
+		public static extern IntPtr eglGetPlatformDisplay(uint platform, void* native_display, IntPtr* attrib_list);
 
 		[DllImport(Library, EntryPoint = "eglGetProcAddress")]
 		public static extern IntPtr eglGetProcAddress(char* procname);
 
 		[DllImport(Library, EntryPoint = "eglGetSyncAttrib")]
-		public static extern bool eglGetSyncAttrib(IntPtr dpy, IntPtr sync, int attribute, out IntPtr value);
+		public static extern bool eglGetSyncAttrib(IntPtr dpy, IntPtr sync, int attribute, IntPtr* value);
 
 		[DllImport(Library, EntryPoint = "eglInitialize")]
 		public static extern bool eglInitialize(IntPtr dpy, int* major, int* minor);
