@@ -146,6 +146,7 @@ namespace GLGenerator
                 @"..\..\..\..\src\ANGLEDotNet\GLES2.cs",
                 "GLES2",
                 "libglesv2",
+                "uint",
                 enums,
                 functions);
         }
@@ -158,6 +159,7 @@ namespace GLGenerator
                 @"..\..\..\..\src\ANGLEDotNet\EGL.cs",
                 "EGL",
                 "libegl",
+                "int",
                 enums,
                 functions);
         }
@@ -272,6 +274,7 @@ namespace GLGenerator
             string outputPath,
             string className,
             string library,
+            string enumType,
             List<EnumData> enums,
             List<FunctionData> functions)
         {
@@ -299,7 +302,7 @@ namespace GLGenerator
 
             foreach (var @enum in enums.OrderBy(x => x.Name))
             {
-                string type = "uint";
+                string type = enumType;
                 string name = @enum.Name;
                 string value = @enum.Value;
 
@@ -320,10 +323,6 @@ namespace GLGenerator
                     int index = value.LastIndexOf(',') + 1;
                     value = value.Substring(index, value.Length - index - 1);
                 }
-
-                // Chop off the "u" if we have a negative value.
-                if (value.StartsWith("-"))
-                    value = $"unchecked((uint){value})";
 
                 sb.AppendLine($"\t\tpublic const {type} {name} = {value};");
             }
@@ -365,6 +364,9 @@ namespace GLGenerator
                     break;
 
                 case "EGLenum":
+                    returnType = "int";
+                    break;
+
                 case "GLenum":
                     returnType = "uint";
                     break;
@@ -525,6 +527,9 @@ namespace GLGenerator
                         break;
 
                     case "EGLenum":
+                        type = "int";
+                        break;
+
                     case "GLbitfield":
                     case "GLenum":
                     case "GLuint":

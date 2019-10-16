@@ -56,14 +56,14 @@ namespace HelloWorld
 
             int[] configAttributes = new int[]
             {
-                (int)EGL_RED_SIZE, 8,
-                (int)EGL_GREEN_SIZE, 8,
-                (int)EGL_BLUE_SIZE, 8,
-                (int)EGL_ALPHA_SIZE, 8,
-                (int)EGL_DEPTH_SIZE, 24,
-                (int)EGL_STENCIL_SIZE, 8,
-                (int)EGL_SAMPLE_BUFFERS, unchecked((int)EGL_DONT_CARE),
-                (int)EGL_NONE
+                EGL_RED_SIZE, 8,
+                EGL_GREEN_SIZE, 8,
+                EGL_BLUE_SIZE, 8,
+                EGL_ALPHA_SIZE, 8,
+                EGL_DEPTH_SIZE, 24,
+                EGL_STENCIL_SIZE, 8,
+                EGL_SAMPLE_BUFFERS, EGL_DONT_CARE,
+                EGL_NONE
             };
 
             IntPtr config;
@@ -78,7 +78,7 @@ namespace HelloWorld
 
             int[] surfaceAttributes = new int[]
             {
-                (int)EGL_NONE, (int)EGL_NONE,
+                EGL_NONE, EGL_NONE,
             };
 
             IntPtr surface;
@@ -100,8 +100,8 @@ namespace HelloWorld
 
             int[] contextAttibutes = new int[]
             {
-                (int)EGL_CONTEXT_CLIENT_VERSION, 2,
-                (int)EGL_NONE
+                EGL_CONTEXT_CLIENT_VERSION, 2,
+                EGL_NONE
             };
 
             IntPtr context;
