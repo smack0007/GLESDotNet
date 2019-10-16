@@ -7,10 +7,7 @@ using System.Runtime.InteropServices;
 namespace HelloWorld
 {
     unsafe class Program
-    {
-        [DllImport("glfw3.dll")]
-        private static extern IntPtr glfwGetWin32Window(IntPtr window);
-        
+    {        
         static void Main(string[] args)
         {
             if (!Application.Init())
@@ -77,7 +74,7 @@ namespace HelloWorld
             };
 
             IntPtr surface;
-            surface = eglCreateWindowSurface(display, config, glfwGetWin32Window(window.Handle), surfaceAttributes);
+            surface = eglCreateWindowSurface(display, config, window.GetNativeHandle(), surfaceAttributes);
 
             if (surface == IntPtr.Zero)
             {
