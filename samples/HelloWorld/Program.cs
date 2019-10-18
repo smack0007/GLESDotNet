@@ -4,6 +4,7 @@ using static GLFWDotNet.GLFW;
 using static GLESDotNet.EGL;
 using static GLESDotNet.GLES2;
 using System.Runtime.InteropServices;
+using System.IO;
 
 namespace HelloWorld
 {
@@ -11,6 +12,9 @@ namespace HelloWorld
     {        
         static void Main(string[] args)
         {
+            //var assemblyDirectory = Path.GetDirectoryName(typeof(Program).Assembly.Location);
+            //Directory.SetCurrentDirectory(Path.Combine(assemblyDirectory, "runtimes", "win-x64", "native"));
+
             if (!Application.Init())
                 return;
 

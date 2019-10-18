@@ -21,17 +21,17 @@ namespace GLESDotNet
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                string assemblyPath = Path.Combine(
+                string assembliesPath = Path.Combine(
                     assemblyDirectory,
                     "runtimes",
                     Environment.Is64BitProcess ? "win-x64" : "win-x86",
-                    "native",
-                    "libegl.dll");
+                    "native");
 
-                IntPtr assembly = Win32.LoadLibrary(assemblyPath);
+                IntPtr assembly = Win32.LoadLibrary(Path.Combine(assembliesPath, "libegl.dll"));
+                Win32.LoadLibrary(Path.Combine(assembliesPath, "libglesv2.dll"));
 
                 if (assembly == IntPtr.Zero)
-                    throw new InvalidOperationException($"Failed to load libegl.dll from path '{assemblyPath}'.");
+                    throw new InvalidOperationException($"Failed to load libegl.dll from path '{assembliesPath}\\libegl.dll'.");
 
                 return x => Win32.GetProcAddress(assembly, x);
             }
