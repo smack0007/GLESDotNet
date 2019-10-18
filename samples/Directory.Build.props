@@ -9,6 +9,6 @@
     <!--<ProjectReference Condition="$(MSBuildProjectName) != 'GLDotNet.Samples'"
                       Include="$(MSBuildThisFileDirectory)GLDotNet.Samples\GLDotNet.Samples.csproj" />-->
 
-    <ProjectReference Include="$(RepositoryRootDirectory)src\ANGLEDotNet\ANGLEDotNet.csproj" />
+    <ProjectReference Include="$(RepositoryRootDirectory)src\GLESDotNet\GLESDotNet.csproj" />
   </ItemGroup>
 </Project>

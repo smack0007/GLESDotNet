@@ -22,7 +22,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace ANGLEDotNet
+namespace GLESDotNet
 {
 	public static unsafe partial class EGL
 	{

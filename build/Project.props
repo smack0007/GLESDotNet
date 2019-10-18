@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
-    <RepositoryUrl>https://github.com/smack0007/ANGLEDotNet.git</RepositoryUrl>
+    <RepositoryUrl>https://github.com/smack0007/GLESDotNet.git</RepositoryUrl>
 
-    <PackageProjectUrl>https://github.com/smack0007/ANGLEDotNet/</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/smack0007/GLESDotNet/</PackageProjectUrl>
     <PackageTags>CSharp;OpenGLES</PackageTags>
 
     <LangVersion>8.0</LangVersion>

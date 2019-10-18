@@ -143,7 +143,7 @@ namespace GLGenerator
             }
 
             Write(
-                @"..\..\..\..\src\ANGLEDotNet\GLES2.cs",
+                @"..\..\..\..\src\GLESDotNet\GLES2.cs",
                 "GLES2",
                 "libglesv2",
                 "uint",
@@ -156,7 +156,7 @@ namespace GLGenerator
             var (enums, functions) = Parse("egl.h", "EGL", "EGLAPI", "EGLAPIENTRY");
 
             Write(
-                @"..\..\..\..\src\ANGLEDotNet\EGL.cs",
+                @"..\..\..\..\src\GLESDotNet\EGL.cs",
                 "EGL",
                 "libegl",
                 "int",
@@ -293,7 +293,7 @@ namespace GLGenerator
             sb.AppendLine("using System.Runtime.InteropServices;");
             sb.AppendLine("using System.Text;");
             sb.AppendLine();
-            sb.AppendLine("namespace ANGLEDotNet");
+            sb.AppendLine("namespace GLESDotNet");
             sb.AppendLine("{");
             sb.AppendLine($"\tpublic static unsafe partial class {className}");
             sb.AppendLine("\t{");

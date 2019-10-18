@@ -5,9 +5,9 @@ VisualStudioVersion = 16.0.29318.209
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A0D5D57A-0926-47C9-9DE5-FCD1FB7397E8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ANGLEDotNet", "src\ANGLEDotNet\ANGLEDotNet.csproj", "{01CAD9A5-A4B3-4BB4-92AB-258793569641}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GLESDotNet", "src\GLESDotNet\GLESDotNet.csproj", "{01CAD9A5-A4B3-4BB4-92AB-258793569641}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ANGLEDotNet", "ANGLEDotNet", "{C72E9388-D90E-4604-9F6E-9BFEC5680FAD}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GLESDotNet", "GLESDotNet", "{C72E9388-D90E-4604-9F6E-9BFEC5680FAD}"
 	ProjectSection(SolutionItems) = preProject
 		Directory.Build.props = Directory.Build.props
 	EndProjectSection

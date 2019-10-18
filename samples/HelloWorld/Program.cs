@@ -1,8 +1,8 @@
 ﻿using GLFWDotNet.Utilities;
 using System;
 using static GLFWDotNet.GLFW;
-using static ANGLEDotNet.EGL;
-using static ANGLEDotNet.GLES2;
+using static GLESDotNet.EGL;
+using static GLESDotNet.GLES2;
 using System.Runtime.InteropServices;
 
 namespace HelloWorld
