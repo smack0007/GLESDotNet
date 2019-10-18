@@ -39,6 +39,8 @@ namespace HelloWorld
 
         private static (IntPtr Display, IntPtr Surface) CreateContext(Window window)
         {
+            eglInit();
+
             var display = eglGetDisplay((IntPtr)EGL_DEFAULT_DISPLAY);
 
             int majorVersion, minorVersion;
@@ -122,6 +124,8 @@ namespace HelloWorld
 
             // Turn off vsync
             eglSwapInterval(display, 0);
+
+            glInit(eglGetProcAddress);
 
             glClearColor(1.0f, 0, 0, 1.0f);
 

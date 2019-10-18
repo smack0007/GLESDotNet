@@ -18,16 +18,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#nullable disable
+
 using System;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Text;
 
 namespace GLESDotNet
 {
 	public static unsafe partial class EGL
 	{
-		public const string Library = "libegl";
-
 		public const int EGL_ALPHA_FORMAT = 0x3088;
 		public const int EGL_ALPHA_FORMAT_NONPRE = 0x308B;
 		public const int EGL_ALPHA_FORMAT_PRE = 0x308C;
@@ -195,137 +196,504 @@ namespace GLESDotNet
 		public const int EGL_WIDTH = 0x3057;
 		public const int EGL_WINDOW_BIT = 0x0004;
 
-		[DllImport(Library, EntryPoint = "eglBindAPI")]
-		public static extern bool eglBindAPI(int api);
+		private static class Delegates
+		{
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglBindAPI(int api);
 
-		[DllImport(Library, EntryPoint = "eglBindTexImage")]
-		public static extern bool eglBindTexImage(IntPtr dpy, IntPtr surface, int buffer);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglBindTexImage(IntPtr dpy, IntPtr surface, int buffer);
 
-		[DllImport(Library, EntryPoint = "eglChooseConfig")]
-		public static extern bool eglChooseConfig(IntPtr dpy, int* attrib_list, IntPtr* configs, int config_size, int* num_config);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglChooseConfig(IntPtr dpy, int* attrib_list, IntPtr* configs, int config_size, int* num_config);
 
-		[DllImport(Library, EntryPoint = "eglClientWaitSync")]
-		public static extern int eglClientWaitSync(IntPtr dpy, IntPtr sync, int flags, ulong timeout);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate int eglClientWaitSync(IntPtr dpy, IntPtr sync, int flags, ulong timeout);
 
-		[DllImport(Library, EntryPoint = "eglCopyBuffers")]
-		public static extern bool eglCopyBuffers(IntPtr dpy, IntPtr surface, IntPtr target);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglCopyBuffers(IntPtr dpy, IntPtr surface, IntPtr target);
 
-		[DllImport(Library, EntryPoint = "eglCreateContext")]
-		public static extern IntPtr eglCreateContext(IntPtr dpy, IntPtr config, IntPtr share_context, int* attrib_list);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate IntPtr eglCreateContext(IntPtr dpy, IntPtr config, IntPtr share_context, int* attrib_list);
 
-		[DllImport(Library, EntryPoint = "eglCreateImage")]
-		public static extern IntPtr eglCreateImage(IntPtr dpy, IntPtr ctx, int target, IntPtr buffer, IntPtr* attrib_list);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate IntPtr eglCreateImage(IntPtr dpy, IntPtr ctx, int target, IntPtr buffer, IntPtr* attrib_list);
 
-		[DllImport(Library, EntryPoint = "eglCreatePbufferFromClientBuffer")]
-		public static extern IntPtr eglCreatePbufferFromClientBuffer(IntPtr dpy, int buftype, IntPtr buffer, IntPtr config, int* attrib_list);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate IntPtr eglCreatePbufferFromClientBuffer(IntPtr dpy, int buftype, IntPtr buffer, IntPtr config, int* attrib_list);
 
-		[DllImport(Library, EntryPoint = "eglCreatePbufferSurface")]
-		public static extern IntPtr eglCreatePbufferSurface(IntPtr dpy, IntPtr config, int* attrib_list);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate IntPtr eglCreatePbufferSurface(IntPtr dpy, IntPtr config, int* attrib_list);
 
-		[DllImport(Library, EntryPoint = "eglCreatePixmapSurface")]
-		public static extern IntPtr eglCreatePixmapSurface(IntPtr dpy, IntPtr config, IntPtr pixmap, int* attrib_list);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate IntPtr eglCreatePixmapSurface(IntPtr dpy, IntPtr config, IntPtr pixmap, int* attrib_list);
 
-		[DllImport(Library, EntryPoint = "eglCreatePlatformPixmapSurface")]
-		public static extern IntPtr eglCreatePlatformPixmapSurface(IntPtr dpy, IntPtr config, void* native_pixmap, IntPtr* attrib_list);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate IntPtr eglCreatePlatformPixmapSurface(IntPtr dpy, IntPtr config, void* native_pixmap, IntPtr* attrib_list);
 
-		[DllImport(Library, EntryPoint = "eglCreatePlatformWindowSurface")]
-		public static extern IntPtr eglCreatePlatformWindowSurface(IntPtr dpy, IntPtr config, void* native_window, IntPtr* attrib_list);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate IntPtr eglCreatePlatformWindowSurface(IntPtr dpy, IntPtr config, void* native_window, IntPtr* attrib_list);
 
-		[DllImport(Library, EntryPoint = "eglCreateSync")]
-		public static extern IntPtr eglCreateSync(IntPtr dpy, int type, IntPtr* attrib_list);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate IntPtr eglCreateSync(IntPtr dpy, int type, IntPtr* attrib_list);
 
-		[DllImport(Library, EntryPoint = "eglCreateWindowSurface")]
-		public static extern IntPtr eglCreateWindowSurface(IntPtr dpy, IntPtr config, IntPtr win, int* attrib_list);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate IntPtr eglCreateWindowSurface(IntPtr dpy, IntPtr config, IntPtr win, int* attrib_list);
 
-		[DllImport(Library, EntryPoint = "eglDestroyContext")]
-		public static extern bool eglDestroyContext(IntPtr dpy, IntPtr ctx);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglDestroyContext(IntPtr dpy, IntPtr ctx);
 
-		[DllImport(Library, EntryPoint = "eglDestroyImage")]
-		public static extern bool eglDestroyImage(IntPtr dpy, IntPtr image);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglDestroyImage(IntPtr dpy, IntPtr image);
 
-		[DllImport(Library, EntryPoint = "eglDestroySurface")]
-		public static extern bool eglDestroySurface(IntPtr dpy, IntPtr surface);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglDestroySurface(IntPtr dpy, IntPtr surface);
 
-		[DllImport(Library, EntryPoint = "eglDestroySync")]
-		public static extern bool eglDestroySync(IntPtr dpy, IntPtr sync);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglDestroySync(IntPtr dpy, IntPtr sync);
 
-		[DllImport(Library, EntryPoint = "eglGetConfigAttrib")]
-		public static extern bool eglGetConfigAttrib(IntPtr dpy, IntPtr config, int attribute, int* value);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglGetConfigAttrib(IntPtr dpy, IntPtr config, int attribute, int* value);
 
-		[DllImport(Library, EntryPoint = "eglGetConfigs")]
-		public static extern bool eglGetConfigs(IntPtr dpy, IntPtr* configs, int config_size, int* num_config);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglGetConfigs(IntPtr dpy, IntPtr* configs, int config_size, int* num_config);
 
-		[DllImport(Library, EntryPoint = "eglGetCurrentContext")]
-		public static extern IntPtr eglGetCurrentContext();
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate IntPtr eglGetCurrentContext();
 
-		[DllImport(Library, EntryPoint = "eglGetCurrentDisplay")]
-		public static extern IntPtr eglGetCurrentDisplay();
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate IntPtr eglGetCurrentDisplay();
 
-		[DllImport(Library, EntryPoint = "eglGetCurrentSurface")]
-		public static extern IntPtr eglGetCurrentSurface(int readdraw);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate IntPtr eglGetCurrentSurface(int readdraw);
 
-		[DllImport(Library, EntryPoint = "eglGetDisplay")]
-		public static extern IntPtr eglGetDisplay(IntPtr display_id);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate IntPtr eglGetDisplay(IntPtr display_id);
 
-		[DllImport(Library, EntryPoint = "eglGetError")]
-		public static extern int eglGetError();
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate int eglGetError();
 
-		[DllImport(Library, EntryPoint = "eglGetPlatformDisplay")]
-		public static extern IntPtr eglGetPlatformDisplay(int platform, void* native_display, IntPtr* attrib_list);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate IntPtr eglGetPlatformDisplay(int platform, void* native_display, IntPtr* attrib_list);
 
-		[DllImport(Library, EntryPoint = "eglGetProcAddress")]
-		public static extern IntPtr eglGetProcAddress(char* procname);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate IntPtr eglGetProcAddress(string procname);
 
-		[DllImport(Library, EntryPoint = "eglGetSyncAttrib")]
-		public static extern bool eglGetSyncAttrib(IntPtr dpy, IntPtr sync, int attribute, IntPtr* value);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglGetSyncAttrib(IntPtr dpy, IntPtr sync, int attribute, IntPtr* value);
 
-		[DllImport(Library, EntryPoint = "eglInitialize")]
-		public static extern bool eglInitialize(IntPtr dpy, int* major, int* minor);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglInitialize(IntPtr dpy, int* major, int* minor);
 
-		[DllImport(Library, EntryPoint = "eglMakeCurrent")]
-		public static extern bool eglMakeCurrent(IntPtr dpy, IntPtr draw, IntPtr read, IntPtr ctx);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglMakeCurrent(IntPtr dpy, IntPtr draw, IntPtr read, IntPtr ctx);
 
-		[DllImport(Library, EntryPoint = "eglQueryAPI")]
-		public static extern int eglQueryAPI();
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate int eglQueryAPI();
 
-		[DllImport(Library, EntryPoint = "eglQueryContext")]
-		public static extern bool eglQueryContext(IntPtr dpy, IntPtr ctx, int attribute, int* value);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglQueryContext(IntPtr dpy, IntPtr ctx, int attribute, int* value);
 
-		[DllImport(Library, EntryPoint = "eglQueryString")]
-		public static extern string eglQueryString(IntPtr dpy, int name);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate string eglQueryString(IntPtr dpy, int name);
 
-		[DllImport(Library, EntryPoint = "eglQuerySurface")]
-		public static extern bool eglQuerySurface(IntPtr dpy, IntPtr surface, int attribute, int* value);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglQuerySurface(IntPtr dpy, IntPtr surface, int attribute, int* value);
 
-		[DllImport(Library, EntryPoint = "eglReleaseTexImage")]
-		public static extern bool eglReleaseTexImage(IntPtr dpy, IntPtr surface, int buffer);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglReleaseTexImage(IntPtr dpy, IntPtr surface, int buffer);
 
-		[DllImport(Library, EntryPoint = "eglReleaseThread")]
-		public static extern bool eglReleaseThread();
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglReleaseThread();
 
-		[DllImport(Library, EntryPoint = "eglSurfaceAttrib")]
-		public static extern bool eglSurfaceAttrib(IntPtr dpy, IntPtr surface, int attribute, int value);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglSurfaceAttrib(IntPtr dpy, IntPtr surface, int attribute, int value);
 
-		[DllImport(Library, EntryPoint = "eglSwapBuffers")]
-		public static extern bool eglSwapBuffers(IntPtr dpy, IntPtr surface);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglSwapBuffers(IntPtr dpy, IntPtr surface);
 
-		[DllImport(Library, EntryPoint = "eglSwapInterval")]
-		public static extern bool eglSwapInterval(IntPtr dpy, int interval);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglSwapInterval(IntPtr dpy, int interval);
 
-		[DllImport(Library, EntryPoint = "eglTerminate")]
-		public static extern bool eglTerminate(IntPtr dpy);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglTerminate(IntPtr dpy);
 
-		[DllImport(Library, EntryPoint = "eglWaitClient")]
-		public static extern bool eglWaitClient();
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglWaitClient();
 
-		[DllImport(Library, EntryPoint = "eglWaitGL")]
-		public static extern bool eglWaitGL();
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglWaitGL();
 
-		[DllImport(Library, EntryPoint = "eglWaitNative")]
-		public static extern bool eglWaitNative(int engine);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglWaitNative(int engine);
 
-		[DllImport(Library, EntryPoint = "eglWaitSync")]
-		public static extern bool eglWaitSync(IntPtr dpy, IntPtr sync, int flags);
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+			public delegate bool eglWaitSync(IntPtr dpy, IntPtr sync, int flags);
+
+		}
+
+		private static Delegates.eglBindAPI _eglBindAPI;
+
+		private static Delegates.eglBindTexImage _eglBindTexImage;
+
+		private static Delegates.eglChooseConfig _eglChooseConfig;
+
+		private static Delegates.eglClientWaitSync _eglClientWaitSync;
+
+		private static Delegates.eglCopyBuffers _eglCopyBuffers;
+
+		private static Delegates.eglCreateContext _eglCreateContext;
+
+		private static Delegates.eglCreateImage _eglCreateImage;
+
+		private static Delegates.eglCreatePbufferFromClientBuffer _eglCreatePbufferFromClientBuffer;
+
+		private static Delegates.eglCreatePbufferSurface _eglCreatePbufferSurface;
+
+		private static Delegates.eglCreatePixmapSurface _eglCreatePixmapSurface;
+
+		private static Delegates.eglCreatePlatformPixmapSurface _eglCreatePlatformPixmapSurface;
+
+		private static Delegates.eglCreatePlatformWindowSurface _eglCreatePlatformWindowSurface;
+
+		private static Delegates.eglCreateSync _eglCreateSync;
+
+		private static Delegates.eglCreateWindowSurface _eglCreateWindowSurface;
+
+		private static Delegates.eglDestroyContext _eglDestroyContext;
+
+		private static Delegates.eglDestroyImage _eglDestroyImage;
+
+		private static Delegates.eglDestroySurface _eglDestroySurface;
+
+		private static Delegates.eglDestroySync _eglDestroySync;
+
+		private static Delegates.eglGetConfigAttrib _eglGetConfigAttrib;
+
+		private static Delegates.eglGetConfigs _eglGetConfigs;
+
+		private static Delegates.eglGetCurrentContext _eglGetCurrentContext;
+
+		private static Delegates.eglGetCurrentDisplay _eglGetCurrentDisplay;
+
+		private static Delegates.eglGetCurrentSurface _eglGetCurrentSurface;
+
+		private static Delegates.eglGetDisplay _eglGetDisplay;
+
+		private static Delegates.eglGetError _eglGetError;
+
+		private static Delegates.eglGetPlatformDisplay _eglGetPlatformDisplay;
+
+		private static Delegates.eglGetProcAddress _eglGetProcAddress;
+
+		private static Delegates.eglGetSyncAttrib _eglGetSyncAttrib;
+
+		private static Delegates.eglInitialize _eglInitialize;
+
+		private static Delegates.eglMakeCurrent _eglMakeCurrent;
+
+		private static Delegates.eglQueryAPI _eglQueryAPI;
+
+		private static Delegates.eglQueryContext _eglQueryContext;
+
+		private static Delegates.eglQueryString _eglQueryString;
+
+		private static Delegates.eglQuerySurface _eglQuerySurface;
+
+		private static Delegates.eglReleaseTexImage _eglReleaseTexImage;
+
+		private static Delegates.eglReleaseThread _eglReleaseThread;
+
+		private static Delegates.eglSurfaceAttrib _eglSurfaceAttrib;
+
+		private static Delegates.eglSwapBuffers _eglSwapBuffers;
+
+		private static Delegates.eglSwapInterval _eglSwapInterval;
+
+		private static Delegates.eglTerminate _eglTerminate;
+
+		private static Delegates.eglWaitClient _eglWaitClient;
+
+		private static Delegates.eglWaitGL _eglWaitGL;
+
+		private static Delegates.eglWaitNative _eglWaitNative;
+
+		private static Delegates.eglWaitSync _eglWaitSync;
+
+		public static void eglInit()
+		{
+			LoadFunctions(LoadAssembly());
+		}
+
+		private static void LoadFunctions(Func<string, IntPtr> getProcAddress)
+		{
+			T getProc<T>(string name) => Marshal.GetDelegateForFunctionPointer<T>(getProcAddress(name));
+
+			_eglBindAPI = getProc<Delegates.eglBindAPI>("eglBindAPI");
+			_eglBindTexImage = getProc<Delegates.eglBindTexImage>("eglBindTexImage");
+			_eglChooseConfig = getProc<Delegates.eglChooseConfig>("eglChooseConfig");
+			_eglClientWaitSync = getProc<Delegates.eglClientWaitSync>("eglClientWaitSync");
+			_eglCopyBuffers = getProc<Delegates.eglCopyBuffers>("eglCopyBuffers");
+			_eglCreateContext = getProc<Delegates.eglCreateContext>("eglCreateContext");
+			_eglCreateImage = getProc<Delegates.eglCreateImage>("eglCreateImage");
+			_eglCreatePbufferFromClientBuffer = getProc<Delegates.eglCreatePbufferFromClientBuffer>("eglCreatePbufferFromClientBuffer");
+			_eglCreatePbufferSurface = getProc<Delegates.eglCreatePbufferSurface>("eglCreatePbufferSurface");
+			_eglCreatePixmapSurface = getProc<Delegates.eglCreatePixmapSurface>("eglCreatePixmapSurface");
+			_eglCreatePlatformPixmapSurface = getProc<Delegates.eglCreatePlatformPixmapSurface>("eglCreatePlatformPixmapSurface");
+			_eglCreatePlatformWindowSurface = getProc<Delegates.eglCreatePlatformWindowSurface>("eglCreatePlatformWindowSurface");
+			_eglCreateSync = getProc<Delegates.eglCreateSync>("eglCreateSync");
+			_eglCreateWindowSurface = getProc<Delegates.eglCreateWindowSurface>("eglCreateWindowSurface");
+			_eglDestroyContext = getProc<Delegates.eglDestroyContext>("eglDestroyContext");
+			_eglDestroyImage = getProc<Delegates.eglDestroyImage>("eglDestroyImage");
+			_eglDestroySurface = getProc<Delegates.eglDestroySurface>("eglDestroySurface");
+			_eglDestroySync = getProc<Delegates.eglDestroySync>("eglDestroySync");
+			_eglGetConfigAttrib = getProc<Delegates.eglGetConfigAttrib>("eglGetConfigAttrib");
+			_eglGetConfigs = getProc<Delegates.eglGetConfigs>("eglGetConfigs");
+			_eglGetCurrentContext = getProc<Delegates.eglGetCurrentContext>("eglGetCurrentContext");
+			_eglGetCurrentDisplay = getProc<Delegates.eglGetCurrentDisplay>("eglGetCurrentDisplay");
+			_eglGetCurrentSurface = getProc<Delegates.eglGetCurrentSurface>("eglGetCurrentSurface");
+			_eglGetDisplay = getProc<Delegates.eglGetDisplay>("eglGetDisplay");
+			_eglGetError = getProc<Delegates.eglGetError>("eglGetError");
+			_eglGetPlatformDisplay = getProc<Delegates.eglGetPlatformDisplay>("eglGetPlatformDisplay");
+			_eglGetProcAddress = getProc<Delegates.eglGetProcAddress>("eglGetProcAddress");
+			_eglGetSyncAttrib = getProc<Delegates.eglGetSyncAttrib>("eglGetSyncAttrib");
+			_eglInitialize = getProc<Delegates.eglInitialize>("eglInitialize");
+			_eglMakeCurrent = getProc<Delegates.eglMakeCurrent>("eglMakeCurrent");
+			_eglQueryAPI = getProc<Delegates.eglQueryAPI>("eglQueryAPI");
+			_eglQueryContext = getProc<Delegates.eglQueryContext>("eglQueryContext");
+			_eglQueryString = getProc<Delegates.eglQueryString>("eglQueryString");
+			_eglQuerySurface = getProc<Delegates.eglQuerySurface>("eglQuerySurface");
+			_eglReleaseTexImage = getProc<Delegates.eglReleaseTexImage>("eglReleaseTexImage");
+			_eglReleaseThread = getProc<Delegates.eglReleaseThread>("eglReleaseThread");
+			_eglSurfaceAttrib = getProc<Delegates.eglSurfaceAttrib>("eglSurfaceAttrib");
+			_eglSwapBuffers = getProc<Delegates.eglSwapBuffers>("eglSwapBuffers");
+			_eglSwapInterval = getProc<Delegates.eglSwapInterval>("eglSwapInterval");
+			_eglTerminate = getProc<Delegates.eglTerminate>("eglTerminate");
+			_eglWaitClient = getProc<Delegates.eglWaitClient>("eglWaitClient");
+			_eglWaitGL = getProc<Delegates.eglWaitGL>("eglWaitGL");
+			_eglWaitNative = getProc<Delegates.eglWaitNative>("eglWaitNative");
+			_eglWaitSync = getProc<Delegates.eglWaitSync>("eglWaitSync");
+		}
+
+		public static bool eglBindAPI(int api)
+		{
+			return _eglBindAPI(api);
+		}
+
+		public static bool eglBindTexImage(IntPtr dpy, IntPtr surface, int buffer)
+		{
+			return _eglBindTexImage(dpy, surface, buffer);
+		}
+
+		public static bool eglChooseConfig(IntPtr dpy, int* attrib_list, IntPtr* configs, int config_size, int* num_config)
+		{
+			return _eglChooseConfig(dpy, attrib_list, configs, config_size, num_config);
+		}
+
+		public static int eglClientWaitSync(IntPtr dpy, IntPtr sync, int flags, ulong timeout)
+		{
+			return _eglClientWaitSync(dpy, sync, flags, timeout);
+		}
+
+		public static bool eglCopyBuffers(IntPtr dpy, IntPtr surface, IntPtr target)
+		{
+			return _eglCopyBuffers(dpy, surface, target);
+		}
+
+		public static IntPtr eglCreateContext(IntPtr dpy, IntPtr config, IntPtr share_context, int* attrib_list)
+		{
+			return _eglCreateContext(dpy, config, share_context, attrib_list);
+		}
+
+		public static IntPtr eglCreateImage(IntPtr dpy, IntPtr ctx, int target, IntPtr buffer, IntPtr* attrib_list)
+		{
+			return _eglCreateImage(dpy, ctx, target, buffer, attrib_list);
+		}
+
+		public static IntPtr eglCreatePbufferFromClientBuffer(IntPtr dpy, int buftype, IntPtr buffer, IntPtr config, int* attrib_list)
+		{
+			return _eglCreatePbufferFromClientBuffer(dpy, buftype, buffer, config, attrib_list);
+		}
+
+		public static IntPtr eglCreatePbufferSurface(IntPtr dpy, IntPtr config, int* attrib_list)
+		{
+			return _eglCreatePbufferSurface(dpy, config, attrib_list);
+		}
+
+		public static IntPtr eglCreatePixmapSurface(IntPtr dpy, IntPtr config, IntPtr pixmap, int* attrib_list)
+		{
+			return _eglCreatePixmapSurface(dpy, config, pixmap, attrib_list);
+		}
+
+		public static IntPtr eglCreatePlatformPixmapSurface(IntPtr dpy, IntPtr config, void* native_pixmap, IntPtr* attrib_list)
+		{
+			return _eglCreatePlatformPixmapSurface(dpy, config, native_pixmap, attrib_list);
+		}
+
+		public static IntPtr eglCreatePlatformWindowSurface(IntPtr dpy, IntPtr config, void* native_window, IntPtr* attrib_list)
+		{
+			return _eglCreatePlatformWindowSurface(dpy, config, native_window, attrib_list);
+		}
+
+		public static IntPtr eglCreateSync(IntPtr dpy, int type, IntPtr* attrib_list)
+		{
+			return _eglCreateSync(dpy, type, attrib_list);
+		}
+
+		public static IntPtr eglCreateWindowSurface(IntPtr dpy, IntPtr config, IntPtr win, int* attrib_list)
+		{
+			return _eglCreateWindowSurface(dpy, config, win, attrib_list);
+		}
+
+		public static bool eglDestroyContext(IntPtr dpy, IntPtr ctx)
+		{
+			return _eglDestroyContext(dpy, ctx);
+		}
+
+		public static bool eglDestroyImage(IntPtr dpy, IntPtr image)
+		{
+			return _eglDestroyImage(dpy, image);
+		}
+
+		public static bool eglDestroySurface(IntPtr dpy, IntPtr surface)
+		{
+			return _eglDestroySurface(dpy, surface);
+		}
+
+		public static bool eglDestroySync(IntPtr dpy, IntPtr sync)
+		{
+			return _eglDestroySync(dpy, sync);
+		}
+
+		public static bool eglGetConfigAttrib(IntPtr dpy, IntPtr config, int attribute, int* value)
+		{
+			return _eglGetConfigAttrib(dpy, config, attribute, value);
+		}
+
+		public static bool eglGetConfigs(IntPtr dpy, IntPtr* configs, int config_size, int* num_config)
+		{
+			return _eglGetConfigs(dpy, configs, config_size, num_config);
+		}
+
+		public static IntPtr eglGetCurrentContext()
+		{
+			return _eglGetCurrentContext();
+		}
+
+		public static IntPtr eglGetCurrentDisplay()
+		{
+			return _eglGetCurrentDisplay();
+		}
+
+		public static IntPtr eglGetCurrentSurface(int readdraw)
+		{
+			return _eglGetCurrentSurface(readdraw);
+		}
+
+		public static IntPtr eglGetDisplay(IntPtr display_id)
+		{
+			return _eglGetDisplay(display_id);
+		}
+
+		public static int eglGetError()
+		{
+			return _eglGetError();
+		}
+
+		public static IntPtr eglGetPlatformDisplay(int platform, void* native_display, IntPtr* attrib_list)
+		{
+			return _eglGetPlatformDisplay(platform, native_display, attrib_list);
+		}
+
+		public static IntPtr eglGetProcAddress(string procname)
+		{
+			return _eglGetProcAddress(procname);
+		}
+
+		public static bool eglGetSyncAttrib(IntPtr dpy, IntPtr sync, int attribute, IntPtr* value)
+		{
+			return _eglGetSyncAttrib(dpy, sync, attribute, value);
+		}
+
+		public static bool eglInitialize(IntPtr dpy, int* major, int* minor)
+		{
+			return _eglInitialize(dpy, major, minor);
+		}
+
+		public static bool eglMakeCurrent(IntPtr dpy, IntPtr draw, IntPtr read, IntPtr ctx)
+		{
+			return _eglMakeCurrent(dpy, draw, read, ctx);
+		}
+
+		public static int eglQueryAPI()
+		{
+			return _eglQueryAPI();
+		}
+
+		public static bool eglQueryContext(IntPtr dpy, IntPtr ctx, int attribute, int* value)
+		{
+			return _eglQueryContext(dpy, ctx, attribute, value);
+		}
+
+		public static string eglQueryString(IntPtr dpy, int name)
+		{
+			return _eglQueryString(dpy, name);
+		}
+
+		public static bool eglQuerySurface(IntPtr dpy, IntPtr surface, int attribute, int* value)
+		{
+			return _eglQuerySurface(dpy, surface, attribute, value);
+		}
+
+		public static bool eglReleaseTexImage(IntPtr dpy, IntPtr surface, int buffer)
+		{
+			return _eglReleaseTexImage(dpy, surface, buffer);
+		}
+
+		public static bool eglReleaseThread()
+		{
+			return _eglReleaseThread();
+		}
+
+		public static bool eglSurfaceAttrib(IntPtr dpy, IntPtr surface, int attribute, int value)
+		{
+			return _eglSurfaceAttrib(dpy, surface, attribute, value);
+		}
+
+		public static bool eglSwapBuffers(IntPtr dpy, IntPtr surface)
+		{
+			return _eglSwapBuffers(dpy, surface);
+		}
+
+		public static bool eglSwapInterval(IntPtr dpy, int interval)
+		{
+			return _eglSwapInterval(dpy, interval);
+		}
+
+		public static bool eglTerminate(IntPtr dpy)
+		{
+			return _eglTerminate(dpy);
+		}
+
+		public static bool eglWaitClient()
+		{
+			return _eglWaitClient();
+		}
+
+		public static bool eglWaitGL()
+		{
+			return _eglWaitGL();
+		}
+
+		public static bool eglWaitNative(int engine)
+		{
+			return _eglWaitNative(engine);
+		}
+
+		public static bool eglWaitSync(IntPtr dpy, IntPtr sync, int flags)
+		{
+			return _eglWaitSync(dpy, sync, flags);
+		}
 
 	}
 }

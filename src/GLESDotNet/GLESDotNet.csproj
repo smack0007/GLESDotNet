@@ -6,10 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\ext\ANGLE\libegl.dll" Link="libegl.dll">
+    <None Include="..\..\ext\ANGLE\libegl.dll" Link="runtimes\win-x64\native\libegl.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\ext\ANGLE\libglesv2.dll" Link="libglesv2.dll">
+    <None Include="..\..\ext\ANGLE\libglesv2.dll" Link="runtimes\win-x64\native\libglesv2.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

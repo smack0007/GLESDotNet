@@ -145,10 +145,11 @@ namespace GLGenerator
             Write(
                 @"..\..\..\..\src\GLESDotNet\GLES2.cs",
                 "GLES2",
-                "libglesv2",
                 "uint",
                 enums,
-                functions);
+                functions,
+                "glInit",
+                false);
         }
 
         private static void GenerateEGL()
@@ -158,10 +159,11 @@ namespace GLGenerator
             Write(
                 @"..\..\..\..\src\GLESDotNet\EGL.cs",
                 "EGL",
-                "libegl",
                 "int",
                 enums,
-                functions);
+                functions,
+                "eglInit",
+                true);
         }
 
         private static (List<EnumData> Enums, List<FunctionData> Functions) Parse(
@@ -273,10 +275,11 @@ namespace GLGenerator
         private static void Write(
             string outputPath,
             string className,
-            string library,
             string enumType,
             List<EnumData> enums,
-            List<FunctionData> functions)
+            List<FunctionData> functions,
+            string initFunctionName,
+            bool includeLoadAssemblyFunction)
         {
             string[] license = File.ReadAllLines(Path.Combine(AssemblyDirectory, "License.txt"));
 
@@ -289,16 +292,18 @@ namespace GLGenerator
             }
 
             sb.AppendLine();
+            sb.AppendLine("#nullable disable");
+            sb.AppendLine();
+
             sb.AppendLine("using System;");
             sb.AppendLine("using System.Runtime.InteropServices;");
+            sb.AppendLine("using System.Security;");
             sb.AppendLine("using System.Text;");
             sb.AppendLine();
             sb.AppendLine("namespace GLESDotNet");
             sb.AppendLine("{");
             sb.AppendLine($"\tpublic static unsafe partial class {className}");
             sb.AppendLine("\t{");
-            sb.AppendLine($"\t\tpublic const string Library = \"{library}\";");
-            sb.AppendLine();
 
             foreach (var @enum in enums.OrderBy(x => x.Name))
             {
@@ -329,13 +334,88 @@ namespace GLGenerator
 
             sb.AppendLine();
 
-            foreach (var function in functions.OrderBy(x => x.Name))
+            var orderedFunctions = functions.OrderBy(x => x.Name);
+
+            sb.AppendLine("\t\tprivate static class Delegates");
+            sb.AppendLine("\t\t{");
+
+            foreach (var function in orderedFunctions)
             {
                 string returnType = GetReturnType(function.ReturnType);
                 string parameters = string.Join(", ", function.Params.Select(x => GetParamType(x) + " " + GetParamName(x.Name)));
 
-                sb.AppendLine($"\t\t[DllImport(Library, EntryPoint = \"{function.Name}\")]");
-                sb.AppendLine($"\t\tpublic static extern {returnType} {function.Name}({parameters});");
+                sb.AppendLine($"\t\t\t[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]");
+                sb.AppendLine($"\t\t\tpublic delegate {returnType} {function.Name}({parameters});");
+                sb.AppendLine();
+            }
+
+            sb.AppendLine("\t\t}");
+            sb.AppendLine();
+
+            foreach (var function in orderedFunctions)
+            {
+                sb.AppendLine($"\t\tprivate static Delegates.{function.Name} _{function.Name};");
+                sb.AppendLine();
+            }
+
+            string initFunctionParams = !includeLoadAssemblyFunction ?
+                "Func<string, IntPtr> getProcAddress" :
+                string.Empty;
+
+            sb.AppendLine($"\t\tpublic static void {initFunctionName}({initFunctionParams})");
+            sb.AppendLine("\t\t{");
+
+            if (includeLoadAssemblyFunction)
+            {
+                sb.AppendLine("\t\t\tLoadFunctions(LoadAssembly());");
+            }
+            else
+            {
+                sb.AppendLine("\t\t\tLoadFunctions(getProcAddress);");
+            }
+
+            sb.AppendLine("\t\t}");
+            sb.AppendLine();
+
+            sb.AppendLine($"\t\tprivate static void LoadFunctions(Func<string, IntPtr> getProcAddress)");
+            sb.AppendLine("\t\t{");
+
+            sb.AppendLine("\t\t\tT getProc<T>(string name) => Marshal.GetDelegateForFunctionPointer<T>(getProcAddress(name));");
+            sb.AppendLine();
+
+            foreach (var function in orderedFunctions)
+            {
+                sb.AppendLine($"\t\t\t_{function.Name} = getProc<Delegates.{function.Name}>(\"{function.Name}\");");
+            }
+
+            sb.AppendLine("\t\t}");
+            sb.AppendLine();
+
+            foreach (var function in orderedFunctions)
+            {
+                if (!Methods.ContainsKey(function.Name))
+                {
+                    string returnType = GetReturnType(function.ReturnType);
+                    string parameters = string.Join(", ", function.Params.Select(x => GetParamType(x) + " " + GetParamName(x.Name)));
+                    string parameterNames = string.Join(", ", function.Params.Select(x => GetParamName(x.Name)));
+
+                    sb.AppendLine($"\t\tpublic static {returnType} {function.Name}({parameters})");
+                    sb.AppendLine("\t\t{");
+
+                    sb.Append("\t\t\t");
+
+                    if (returnType != "void")
+                        sb.Append("return ");
+
+                    sb.AppendLine($"_{function.Name}({parameterNames});");
+
+                    sb.AppendLine("\t\t}");
+                }
+                else
+                {
+                    sb.AppendLine("\t\t" + Methods[function.Name].Trim());
+                }
+
                 sb.AppendLine();
             }
 
@@ -436,6 +516,7 @@ namespace GLGenerator
                         type = "byte*";
                         break;
 
+                    case "char*":
                     case "GLchar*":
                         if (param.IsConst)
                         {
@@ -573,5 +654,9 @@ namespace GLGenerator
 
             return name;
         }
+
+        private static readonly Dictionary<string, string> Methods = new Dictionary<string, string>()
+        {
+        };
     }
 }
