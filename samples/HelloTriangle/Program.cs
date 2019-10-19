@@ -178,18 +178,26 @@ namespace HelloTriangle
         private static void Init()
         {
             string vShaderStr =
-@"attribute vec4 vPosition;
- void main()
- {
-    gl_Position = vPosition;
- }";
+@"attribute vec3 vPosition;
+attribute vec3 vColor;
+
+varying vec3 fragColor;
+
+void main()
+{
+    gl_Position = vec4(vPosition, 1.0);
+    fragColor = vColor;
+}";
 
             string fShaderStr =
 @"precision mediump float;
- void main()
- {
-    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
- }";
+
+varying vec3 fragColor;
+
+void main()
+{
+    gl_FragColor = vec4(fragColor, 1.0);
+}";
             
             uint vertexShader = LoadShader(vShaderStr, GL_VERTEX_SHADER);
             uint fragmentShader = LoadShader(fShaderStr, GL_FRAGMENT_SHADER);
@@ -202,6 +210,7 @@ namespace HelloTriangle
             glAttachShader(_program, fragmentShader);
             
             glBindAttribLocation(_program, 0, "vPosition");
+            glBindAttribLocation(_program, 1, "vColor");
             glLinkProgram(_program);
 
             int linked;
@@ -233,6 +242,13 @@ namespace HelloTriangle
                 0.5f, -0.5f, 0.0f
             };
 
+            float[] vColors = new float[]
+            {
+                1.0f, 0.0f, 0.0f,
+                0.0f, 1.0f, 0.0f,
+                0.0f, 0.0f, 1.0f
+            };
+
             glViewport(0, 0, window.Width, window.Height);
             glClear(GL_COLOR_BUFFER_BIT);
             
@@ -244,6 +260,14 @@ namespace HelloTriangle
             }
 
             glEnableVertexAttribArray(0);
+
+            fixed (void* vColorsPtr = vColors)
+            {
+                glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, vColorsPtr);
+            }
+            
+            glEnableVertexAttribArray(1);
+
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }
     }
