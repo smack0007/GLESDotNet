@@ -28,6 +28,8 @@ namespace GLESDotNet
                     "native");
 
                 IntPtr assembly = Win32.LoadLibrary(Path.Combine(assembliesPath, "libegl.dll"));
+
+                // Load libglesv2 along with libegl.dll otherwise the program will crash at the first egl call.
                 Win32.LoadLibrary(Path.Combine(assembliesPath, "libglesv2.dll"));
 
                 if (assembly == IntPtr.Zero)
