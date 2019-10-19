@@ -5,16 +5,16 @@ using static GLESDotNet.EGL;
 using static GLESDotNet.GLES2;
 using System.Runtime.InteropServices;
 using System.IO;
+using System.Text;
 
 namespace HelloWorld
 {
     unsafe class Program
-    {        
+    {
+        private static uint _program;
+
         static void Main(string[] args)
         {
-            //var assemblyDirectory = Path.GetDirectoryName(typeof(Program).Assembly.Location);
-            //Directory.SetCurrentDirectory(Path.Combine(assemblyDirectory, "runtimes", "win-x64", "native"));
-
             if (!Application.Init())
                 return;
 
@@ -22,18 +22,19 @@ namespace HelloWorld
 
             var window = new Window();
             var (display, surface) = CreateContext(window);
+            Init();
 
             var keyboard = new Keyboard(window);
 
             Application.Run(window, () =>
             {
                 if (keyboard[Keys.Escape])
-                { 
+                {
                     window.Close();
                     return;
                 }
 
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                Draw(window);
 
                 eglSwapBuffers(display, surface);
             });
@@ -131,8 +132,6 @@ namespace HelloWorld
 
             glInit(eglGetProcAddress);
 
-            glClearColor(1.0f, 0, 0, 1.0f);
-
             string title = "RENDERER: " + Marshal.PtrToStringAnsi(glGetString(GL_RENDERER)) + " ";
             title += "VENDOR: " + Marshal.PtrToStringAnsi(glGetString(GL_VENDOR)) + " ";
             title += "VERSION: " + Marshal.PtrToStringAnsi(glGetString(GL_VERSION));
@@ -141,6 +140,111 @@ namespace HelloWorld
             window.Title = title;
 
             return (display, surface);
+        }
+
+        private static uint LoadShader(string shaderSrc, uint type)
+        {
+            var shader = glCreateShader(type);
+            
+            if(shader == 0)
+                return 0;
+
+            var shaderSrcTmp = new string[] { shaderSrc };
+            var shaderLength = shaderSrc.Length;
+            glShaderSource(shader, 1, shaderSrcTmp, &shaderLength);
+
+            glCompileShader(shader);
+
+            int compiled;
+            glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+            
+            if (compiled == 0)
+            {
+                int infoLength;
+                glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLength);
+
+                if (infoLength > 1)
+                {
+                    var infoLog = new StringBuilder(infoLength);
+                    glGetShaderInfoLog(shader, infoLength, null, infoLog);
+                    glDeleteShader(shader);
+                    throw new InvalidOperationException($"Error compiling shader:\n{infoLog}");
+                }
+            }
+            
+            return shader;
+        }
+
+        private static void Init()
+        {
+            string vShaderStr =
+@"attribute vec4 vPosition;
+ void main()
+ {
+    gl_Position = vPosition;
+ }";
+
+            string fShaderStr =
+@"precision mediump float;
+ void main()
+ {
+    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+ }";
+            
+            uint vertexShader = LoadShader(vShaderStr, GL_VERTEX_SHADER);
+            uint fragmentShader = LoadShader(fShaderStr, GL_FRAGMENT_SHADER);
+            
+            _program = glCreateProgram();
+            if (_program == 0)
+                throw new InvalidOperationException("Failed to create program.");
+
+            glAttachShader(_program, vertexShader);
+            glAttachShader(_program, fragmentShader);
+            
+            glBindAttribLocation(_program, 0, "vPosition");
+            glLinkProgram(_program);
+
+            int linked;
+            glGetProgramiv(_program, GL_LINK_STATUS, &linked);
+            
+            if (linked == 0)
+            {
+                int infoLength;
+                glGetProgramiv(_program, GL_INFO_LOG_LENGTH, &infoLength);
+
+                if (infoLength > 1)
+                {
+                    var infoLog = new StringBuilder(infoLength);
+                    glGetProgramInfoLog(_program, infoLength, null, infoLog);
+                    glDeleteProgram(_program);
+                    throw new InvalidOperationException($"Error linking program:\n{infoLog}");
+                }
+            }
+
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        }
+
+        private static void Draw(Window window)
+        {
+            float[] vVertices = new float[]
+            {
+                0.0f, 0.5f, 0.0f,
+                -0.5f, -0.5f, 0.0f,
+                0.5f, -0.5f, 0.0f
+            };
+
+            glViewport(0, 0, window.Width, window.Height);
+            glClear(GL_COLOR_BUFFER_BIT);
+            
+            glUseProgram(_program);
+
+            fixed (void* vVerticesPtr = vVertices)
+            {
+                glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, vVerticesPtr);
+            }
+
+            glEnableVertexAttribArray(0);
+            glDrawArrays(GL_TRIANGLES, 0, 3);
         }
     }
 }
