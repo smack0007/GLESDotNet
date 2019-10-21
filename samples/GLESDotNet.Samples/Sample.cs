@@ -57,8 +57,6 @@ namespace GLESDotNet.Samples
 
         private unsafe void CreateContext()
         {
-            eglInit();
-
             _display = eglGetDisplay((IntPtr)EGL_DEFAULT_DISPLAY);
 
             int majorVersion, minorVersion;

@@ -148,8 +148,8 @@ namespace GLGenerator
                 "uint",
                 enums,
                 functions,
-                "glInit",
-                false);
+                false,
+                "glInit");
         }
 
         private static void GenerateEGL()
@@ -162,7 +162,6 @@ namespace GLGenerator
                 "int",
                 enums,
                 functions,
-                "eglInit",
                 true);
         }
 
@@ -278,8 +277,8 @@ namespace GLGenerator
             string enumType,
             List<EnumData> enums,
             List<FunctionData> functions,
-            string initFunctionName,
-            bool includeLoadAssemblyFunction)
+            bool includeLoadAssemblyFunction,
+            string initFunctionName = "")
         {
             string[] license = File.ReadAllLines(Path.Combine(AssemblyDirectory, "License.txt"));
 
@@ -358,21 +357,18 @@ namespace GLGenerator
                 sb.AppendLine();
             }
 
-            string initFunctionParams = !includeLoadAssemblyFunction ?
-                "Func<string, IntPtr> getProcAddress" :
-                string.Empty;
-
-            sb.AppendLine($"\t\tpublic static void {initFunctionName}({initFunctionParams})");
-            sb.AppendLine("\t\t{");
-
             if (includeLoadAssemblyFunction)
             {
+                sb.AppendLine($"\t\tstatic {className}()");
+                sb.AppendLine("\t\t{");
                 sb.AppendLine("\t\t\tLoadFunctions(LoadAssembly());");
             }
             else
             {
+                sb.AppendLine($"\t\tpublic static void {initFunctionName}(Func<string, IntPtr> getProcAddress)");
+                sb.AppendLine("\t\t{");
                 sb.AppendLine("\t\t\tLoadFunctions(getProcAddress);");
-            }
+            }            
 
             sb.AppendLine("\t\t}");
             sb.AppendLine();

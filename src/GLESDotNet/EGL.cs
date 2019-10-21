@@ -420,7 +420,7 @@ namespace GLESDotNet
 
 		private static Delegates.eglWaitSync _eglWaitSync;
 
-		public static void eglInit()
+		static EGL()
 		{
 			LoadFunctions(LoadAssembly());
 		}
