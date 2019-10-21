@@ -6,8 +6,8 @@
 
     <PackageReference Include="ImageDotNet" Version="19.1.0" />
 
-    <!--<ProjectReference Condition="$(MSBuildProjectName) != 'GLDotNet.Samples'"
-                      Include="$(MSBuildThisFileDirectory)GLDotNet.Samples\GLDotNet.Samples.csproj" />-->
+    <ProjectReference Condition="$(MSBuildProjectName) != 'GLESDotNet.Samples'"
+                      Include="$(MSBuildThisFileDirectory)GLESDotNet.Samples\GLESDotNet.Samples.csproj" />
 
     <ProjectReference Include="$(RepositoryRootDirectory)src\GLESDotNet\GLESDotNet.csproj" />
   </ItemGroup>
