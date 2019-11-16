@@ -53,6 +53,28 @@ namespace HelloTriangle
             return shader;
         }
 
+        private static void LinkProgram(uint program)
+        {
+            glLinkProgram(program);
+
+            int linked;
+            glGetProgramiv(program, GL_LINK_STATUS, &linked);
+
+            if (linked == 0)
+            {
+                int infoLength;
+                glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLength);
+
+                if (infoLength > 1)
+                {
+                    var infoLog = new StringBuilder(infoLength);
+                    glGetProgramInfoLog(program, infoLength, null, infoLog);
+                    glDeleteProgram(program);
+                    throw new InvalidOperationException($"Error linking program:\n{infoLog}");
+                }
+            }
+        }
+
         protected override void Initialize()
         {
             string vertShader =
@@ -89,24 +111,7 @@ void main()
             
             glBindAttribLocation(_program, 0, "vertPosition");
             glBindAttribLocation(_program, 1, "vertColor");
-            glLinkProgram(_program);
-
-            int linked;
-            glGetProgramiv(_program, GL_LINK_STATUS, &linked);
-            
-            if (linked == 0)
-            {
-                int infoLength;
-                glGetProgramiv(_program, GL_INFO_LOG_LENGTH, &infoLength);
-
-                if (infoLength > 1)
-                {
-                    var infoLog = new StringBuilder(infoLength);
-                    glGetProgramInfoLog(_program, infoLength, null, infoLog);
-                    glDeleteProgram(_program);
-                    throw new InvalidOperationException($"Error linking program:\n{infoLog}");
-                }
-            }
+            LinkProgram(_program);
 
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         }
