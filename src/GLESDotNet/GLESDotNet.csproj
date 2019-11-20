@@ -5,13 +5,11 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <Import Project="$(RepositoryRootDirectory)build\CopyDependencies.targets" />
+
   <ItemGroup>
-    <None Include="..\..\ext\ANGLE\libegl.dll" Link="runtimes\win-x64\native\libegl.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\..\ext\ANGLE\libglesv2.dll" Link="runtimes\win-x64\native\libglesv2.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Include="$(ANGLEDirectory)ANGLE.license" Visible="false" Pack="true" PackagePath="lib\$(TargetFramework)\" />
+    <None Include="@(ANGLEWinX64Assemblies)" Visible="false" Pack="true" PackagePath="runtimes\win-x64\native" />
   </ItemGroup>
 
 </Project>
