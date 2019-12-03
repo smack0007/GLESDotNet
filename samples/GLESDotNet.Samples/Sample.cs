@@ -16,7 +16,7 @@ namespace GLESDotNet.Samples
         private IntPtr _display;
         private IntPtr _surface;
 
-        private Stopwatch? _stopwatch;
+        private Stopwatch _stopwatch = new Stopwatch();
         private float _lastElapsed;
         private float _elapsedSinceLastFrame;
 
@@ -155,7 +155,7 @@ namespace GLESDotNet.Samples
 
         public void Run()
         {
-            _stopwatch = Stopwatch.StartNew();
+            _stopwatch.Restart();
 
             Initialize();
 
