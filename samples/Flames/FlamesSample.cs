@@ -10,54 +10,59 @@ namespace Flames
     public unsafe class FlamesSample : Sample
     {
         private static readonly uint[] _fireColors = new uint[] {
-            0x00070707,
-            0x0007071f,
-            0x00070f2f,
-            0x00070f47,
-            0x00071757,
-            0x00071f67,
-            0x00071f77,
-            0x0007278f,
-            0x00072f9f,
-            0x00073faf,
-            0x000747bf,
-            0x000747c7,
-            0x00074FDF,
-            0x000757DF,
-            0x000757DF,
-            0x00075FD7,
-            0x000F67D7,
-            0x000f6fcf,
-            0x000f77cf,
-            0x000f7fcf,
-            0x001787CF,
-            0x001787C7,
-            0x00178FC7,
-            0x001F97C7,
-            0x001F9FBF,
-            0x001F9FBF,
-            0x0027A7BF,
-            0x0027A7BF,
-            0x002FAFBF,
-            0x002FAFB7,
-            0x002FB7B7,
-            0x0037B7B7,
-            0x006FCFCF,
-            0x009FDFDF,
-            0x00C7EFEF,
-            0x00FFFFFF,
+            0x00000000,
+            0xC0070707,
+            0xC007071f,
+            0xC0070f2f,
+            0xC0070f47,
+            0xC0071757,
+            0xC0071f67,
+            0xC0071f77,
+            0xC007278f,
+            0xC0072f9f,
+            0xC0073faf,
+            0xC00747bf,
+            0xC00747c7,
+            0xC0074FDF,
+            0xC00757DF,
+            0xC00757DF,
+            0xC0075FD7,
+            0xC00F67D7,
+            0xC00f6fcf,
+            0xC00f77cf,
+            0xC00f7fcf,
+            0xC01787CF,
+            0xC01787C7,
+            0xC0178FC7,
+            0xC01F97C7,
+            0xC01F9FBF,
+            0xC01F9FBF,
+            0xC027A7BF,
+            0xC027A7BF,
+            0xC02FAFBF,
+            0xC02FAFB7,
+            0xC02FB7B7,
+            0xC037B7B7,
+            0xC06FCFCF,
+            0xC09FDFDF,
+            0xC0C7EFEF,
+            0xC0FFFFFF,
         };
 
         private uint _program;
         private int _vertTransformLocation;
         private int _fragTextureLocation;
         
-        private uint _backgroundTexture;
         private int _backgroundWidth;
         private int _backgroundHeight;
+        private uint _backgroundTexture;
 
+        private int _fireWidth;
+        private int _fireHeight;
         private uint _fireTexture;
         private uint[] _firePixels;
+
+        private Random _random;
 
         public static void Main(string[] args)
         {
@@ -69,7 +74,11 @@ namespace Flames
         {
             Window.Title = "Flames";
 
-            _firePixels = new uint[Window.Width * Window.Height];
+            _fireWidth = 320;
+            _fireHeight = 160;
+            _firePixels = new uint[_fireWidth * _fireHeight];
+
+            _random = new Random();
         }
 
         private static uint CompileShader(string shaderSrc, uint type)
@@ -127,7 +136,7 @@ namespace Flames
             }
         }
 
-        private int GetColorIndex(uint pixel)
+        private int GetFireColorIndex(uint pixel)
         {
             for (int i = 0; i < _fireColors.Length; i++)
             {
@@ -140,19 +149,36 @@ namespace Flames
 
         private uint GetFirePixel(int x, int y)
         {
-            return _firePixels[y * Window.Width + x];
+            return _firePixels[y * _fireWidth + x];
         }
 
         private void SetFirePixel(int x, int y, int colorIndex)
         {
-            _firePixels[y * Window.Width + x] = _fireColors[colorIndex];
+            if (colorIndex < 0)
+                colorIndex = 0;
+
+            if (colorIndex > _fireColors.Length - 1)
+                colorIndex = _fireColors.Length - 1;
+
+            if (x < 0)
+                return;
+
+            _firePixels[y * _fireWidth + x] = _fireColors[colorIndex];
         }
 
         private void SpreadFire(int x, int y)
         {
-            uint pixel = GetFirePixel(x, y + 1);
-            int colorIndex = GetColorIndex(pixel);
-            SetFirePixel(x, y, colorIndex - 1);
+            uint pixel = GetFirePixel(x, y);
+            int colorIndex = GetFireColorIndex(pixel);
+            int random = _random.Next(0, 100);
+            SetFirePixel(x - (random % 5), y - 1, colorIndex - (random % 3));
+        }
+
+        private void UpdateFire()
+        {
+            for (int x = 0; x < _fireWidth; x++)
+                for (int y = 1; y < _fireHeight; y++)
+                    SpreadFire(x, y);
         }
 
         protected override void Initialize()
@@ -225,14 +251,16 @@ void main()
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)GL_LINEAR);
 
             glBindTexture(GL_TEXTURE_2D, _fireTexture);
-            glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA, Window.Width, Window.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, null);
+            glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA, _fireWidth, _fireHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, null);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)GL_LINEAR);
 
+            glEnable(GL_BLEND);
+            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-            for (int x = 0; x < Window.Width; x++)
-                SetFirePixel(x, Window.Height - 1, _fireColors.Length - 1);
+            for (int x = 0; x < _fireWidth; x++)
+                SetFirePixel(x, _fireHeight - 1, _fireColors.Length - 1);
         }
 
         private static float[] GenerateVertPositions(float x, float y, int width, int height)
@@ -254,9 +282,7 @@ void main()
 
         protected override void Update(float elapsed)
         {
-            for (int x = 0; x < Window.Width; x++)
-                for (int y = Window.Height - 2; y >= 0; y--)
-                    SpreadFire(x, y);
+            UpdateFire();
         }
 
         protected override void Draw()
@@ -331,7 +357,7 @@ void main()
             glBindTexture(GL_TEXTURE_2D, _fireTexture);
             fixed (uint* flamePixelsPtr = _firePixels)
             {
-                glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA, Window.Width, Window.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, flamePixelsPtr);
+                glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA, _fireWidth, _fireHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, flamePixelsPtr);
             }
             glUniform1i(_fragTextureLocation, 0);
 
