@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using static GLESDotNet.GLES2;
 using System.Text;
 using GLESDotNet.Samples;
@@ -57,8 +56,9 @@ namespace Flames
         private int _backgroundHeight;
         private uint _backgroundTexture;
 
-        private int _fireWidth;
-        private int _fireHeight;
+        private const int _fireWidth = 450;
+        private const int _firePadding = 50;
+        private const int _fireHeight = 120;
         private uint _fireTexture;
         private uint[] _firePixels;
 
@@ -74,8 +74,6 @@ namespace Flames
         {
             Window.Title = "Flames";
 
-            _fireWidth = 320;
-            _fireHeight = 160;
             _firePixels = new uint[_fireWidth * _fireHeight];
 
             _random = new Random();
@@ -251,7 +249,7 @@ void main()
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)GL_LINEAR);
 
             glBindTexture(GL_TEXTURE_2D, _fireTexture);
-            glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA, _fireWidth, _fireHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, null);
+            glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA, _fireWidth - _firePadding, _fireHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, null);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)GL_LINEAR);
 
@@ -259,6 +257,7 @@ void main()
             glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
+            // Initialize the bottom row of pixels with the last color.
             for (int x = 0; x < _fireWidth; x++)
                 SetFirePixel(x, _fireHeight - 1, _fireColors.Length - 1);
         }
@@ -357,7 +356,8 @@ void main()
             glBindTexture(GL_TEXTURE_2D, _fireTexture);
             fixed (uint* flamePixelsPtr = _firePixels)
             {
-                glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA, _fireWidth, _fireHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, flamePixelsPtr);
+                for (int y = 0; y < _fireHeight; y++)
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, y, _fireWidth - _firePadding, 1, GL_RGBA, GL_UNSIGNED_BYTE, &flamePixelsPtr[y * _fireWidth + (_firePadding / 2)]);
             }
             glUniform1i(_fragTextureLocation, 0);
 
