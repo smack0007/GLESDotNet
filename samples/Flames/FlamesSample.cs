@@ -71,9 +71,8 @@ namespace Flames
         }
 
         public FlamesSample()
+            : base("Flames")
         {
-            Window.Title = "Flames";
-
             _firePixels = new uint[_fireWidth * _fireHeight];
 
             _random = new Random();
@@ -304,8 +303,8 @@ void main()
                 -1.0f, 1.0f, 0.0f, 1.0f,
             };
 
-            float centerX = Window.Width / 2.0f;
-            float centerY = Window.Height / 2.0f;
+            float centerX = WindowWidth / 2.0f;
+            float centerY = WindowHeight / 2.0f;
             
             float[] vertPositions = GenerateVertPositions(
                 centerX - (_backgroundWidth / 2.0f),
@@ -324,7 +323,7 @@ void main()
                 0.0f, 1.0f
             };
 
-            glViewport(0, 0, Window.Width, Window.Height);
+            glViewport(0, 0, WindowWidth, WindowHeight);
             glClear(GL_COLOR_BUFFER_BIT);
 
             glUseProgram(_program);
@@ -361,7 +360,7 @@ void main()
             }
             glUniform1i(_fragTextureLocation, 0);
 
-            vertPositions = GenerateVertPositions(0, 0, Window.Width, Window.Height);
+            vertPositions = GenerateVertPositions(0, 0, WindowWidth, WindowHeight);
 
             fixed (void* vertPositionsPtr = vertPositions)
             {

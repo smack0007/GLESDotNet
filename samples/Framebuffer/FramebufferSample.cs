@@ -26,8 +26,8 @@ namespace Framebuffer
         }
 
         public FramebufferSample()
+            : base("Framebuffer")
         {
-            Window.Title = "Framebuffer";
         }
 
         private static uint CompileShader(string shaderSrc, uint type)
@@ -318,7 +318,7 @@ void main()
             glUseProgram(_screenProgram);
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            glViewport(0, 0, Window.Width, Window.Height);
+            glViewport(0, 0, WindowWidth, WindowHeight);
             glClear(GL_COLOR_BUFFER_BIT);
 
             fixed (void* screenVertPositionsPtr = screenVertPositions)

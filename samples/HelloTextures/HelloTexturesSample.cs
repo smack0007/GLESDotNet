@@ -19,8 +19,8 @@ namespace HelloTextures
         }
 
         public HelloTexturesSample()
+            : base("Hello Textures")
         {
-            Window.Title = "Hello Textures";
         }
 
         private static uint CompileShader(string shaderSrc, uint type)
@@ -180,7 +180,7 @@ void main()
                 0.0f, 1.0f
             };
 
-            glViewport(0, 0, Window.Width, Window.Height);
+            glViewport(0, 0, WindowWidth, WindowHeight);
             glClear(GL_COLOR_BUFFER_BIT);
 
             glUseProgram(_program);

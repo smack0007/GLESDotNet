@@ -3,15 +3,18 @@ using System.Diagnostics;
 using static GLFWDotNet.GLFW;
 using static GLESDotNet.EGL;
 using static GLESDotNet.GLES2;
-using GLFWDotNet.Utilities;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace GLESDotNet.Samples
 {
     public abstract class Sample : IDisposable
     {
         private const float TimeBetweenFrames = 1000.0f / 60.0f;
+
+        private IntPtr _window;
+        private GLFWwindowsizefun _windowSizeCallback;
 
         private IntPtr _display;
         private IntPtr _surface;
@@ -22,26 +25,34 @@ namespace GLESDotNet.Samples
 
         private float _fpsElapsed;
 
-        public Window Window { get; }
+        public int WindowWidth { get; private set; }
 
-        public Keyboard Keyboard { get; }
+        public int WindowHeight { get; private set; }
 
         public int FramesPerSecond { get; private set; }
 
-        public Sample()
+        public Sample(string title, int windowWidth = 800, int windowHeight = 600)
         {
             var basePath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
             Directory.SetCurrentDirectory(basePath);
 
-            if (!Application.Init())
+            if (glfwInit() == 0)
                 throw new InvalidOperationException("Failed to initialize GLFW.");
 
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-            Window = new Window();
-            CreateContext();
+            _window = glfwCreateWindow(windowWidth, windowHeight, title, IntPtr.Zero, IntPtr.Zero);
 
-            Keyboard = new Keyboard(Window);
+            if (_window == IntPtr.Zero)
+                throw new InvalidOperationException("Failed to create window.");
+
+            WindowWidth = windowWidth;
+            WindowHeight = windowHeight;
+
+            _windowSizeCallback = OnWindowSize;
+            glfwSetWindowSizeCallback(_window, _windowSizeCallback);
+
+            CreateContext();
         }
 
         ~Sample()
@@ -53,6 +64,20 @@ namespace GLESDotNet.Samples
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        private void OnWindowSize(IntPtr window, int width, int height)
+        {
+            WindowWidth = width;
+            WindowHeight = height;
+        }
+
+        private IntPtr GetNativeWindowHandle()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                return glfwGetWin32Window(_window);
+
+            throw new NotImplementedException($"{nameof(GetNativeWindowHandle)} not implemented on this platform.");
         }
 
         private unsafe void CreateContext()
@@ -101,7 +126,7 @@ namespace GLESDotNet.Samples
 
             fixed (int* surfaceAttribtuesPtr = surfaceAttributes)
             {
-                _surface = eglCreateWindowSurface(_display, config, Window.GetNativeHandle(), surfaceAttribtuesPtr);
+                _surface = eglCreateWindowSurface(_display, config, GetNativeWindowHandle(), surfaceAttribtuesPtr);
             }
 
             if (_surface == IntPtr.Zero)
@@ -141,16 +166,11 @@ namespace GLESDotNet.Samples
             eglSwapInterval(_display, 0);
 
             glInit(eglGetProcAddress);
-
-            //string title = "RENDERER: " + Marshal.PtrToStringAnsi(glGetString(GL_RENDERER)) + " ";
-            //title += "VENDOR: " + Marshal.PtrToStringAnsi(glGetString(GL_VENDOR)) + " ";
-            //title += "VERSION: " + Marshal.PtrToStringAnsi(glGetString(GL_VERSION));
-            //text += "EXTENSIONS: " + Environment.NewLine + glGetString(GL_EXTENSIONS);
         }
 
         protected virtual void Dispose(bool disposing)
         {
-            Application.Terminate();
+            glfwTerminate();
         }
 
         public void Run()
@@ -159,16 +179,12 @@ namespace GLESDotNet.Samples
 
             Initialize();
 
-            Application.Run(Window, () =>
+            while (glfwWindowShouldClose(_window) == 0)
             {
-                if (Keyboard[Keys.Escape])
-                {
-                    Window.Close();
-                    return;
-                }
+                glfwPollEvents();
 
                 Tick();
-            });
+            }
         }
 
         private void Tick()
