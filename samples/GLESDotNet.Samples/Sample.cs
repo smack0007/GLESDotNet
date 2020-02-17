@@ -15,6 +15,7 @@ namespace GLESDotNet.Samples
 
         private IntPtr _window;
         private GLFWwindowsizefun _windowSizeCallback;
+        private GLFWkeyfun _keyboardCallback;
 
         private IntPtr _display;
         private IntPtr _surface;
@@ -52,6 +53,9 @@ namespace GLESDotNet.Samples
             _windowSizeCallback = OnWindowSize;
             glfwSetWindowSizeCallback(_window, _windowSizeCallback);
 
+            _keyboardCallback = OnKeyboard;
+            glfwSetKeyCallback(_window, _keyboardCallback);
+
             CreateContext();
         }
 
@@ -66,10 +70,16 @@ namespace GLESDotNet.Samples
             GC.SuppressFinalize(this);
         }
 
-        private void OnWindowSize(IntPtr window, int width, int height)
+        protected virtual void OnWindowSize(IntPtr window, int width, int height)
         {
             WindowWidth = width;
             WindowHeight = height;
+        }
+
+        protected virtual void OnKeyboard(IntPtr window, int key, int scancode, int action, int mods)
+        {
+            if (key == GLFW_KEY_ESCAPE)
+                glfwSetWindowShouldClose(_window, 1);
         }
 
         private IntPtr GetNativeWindowHandle()
