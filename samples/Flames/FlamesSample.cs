@@ -237,7 +237,7 @@ void main()
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, _backgroundTexture);
 
-            var image = Image.LoadTga("opengles.tga").To<Rgba32>();
+            var image = Image.LoadPng("opengles.png").To<Rgba32>();
             _backgroundWidth = image.Width;
             _backgroundHeight = image.Height;
             using (var data = image.GetDataPointer())

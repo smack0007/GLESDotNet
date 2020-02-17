@@ -1,7 +1,7 @@
 <Project>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
-  <Import Project="$(RepositoryRootDirectory)build\CopyDependencies.targets" />
+  <Import Project="$(RepositoryRootDirectory)build/CopyDependencies.targets" />
   
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -10,11 +10,14 @@
   <ItemGroup>
     <PackageReference Include="GLFWDotNet" Version="20.2.0" />
 
-    <PackageReference Include="ImageDotNet" Version="20.2.0" />
+    <PackageReference Include="ImageDotNet" Version="20.2.1" />
+
+    <!-- I use this sometimes for debugging ImageDotNet -->
+    <!--<ProjectReference Include="$(RepositoryRootDirectory)../ImageDotNet/src/ImageDotNet/ImageDotNet.csproj" />-->
 
     <ProjectReference Condition="$(MSBuildProjectName) != 'GLESDotNet.Samples'"
-                      Include="$(MSBuildThisFileDirectory)GLESDotNet.Samples\GLESDotNet.Samples.csproj" />
+                      Include="$(MSBuildThisFileDirectory)GLESDotNet.Samples/GLESDotNet.Samples.csproj" />
 
-    <ProjectReference Include="$(RepositoryRootDirectory)src\GLESDotNet\GLESDotNet.csproj" />
+    <ProjectReference Include="$(RepositoryRootDirectory)src/GLESDotNet/GLESDotNet.csproj" />
   </ItemGroup>
 </Project>
