@@ -1,4 +1,6 @@
 [![The MIT License](https://img.shields.io/badge/license-MIT-orange.svg?style=flat-square)](http://opensource.org/licenses/MIT)
+[![Actions Status](https://github.com/smack0007/GLESDotNet/workflows/CI/badge.svg)](https://github.com/smack0007/GLESDotNet/actions)
+[![NuGet Badge](https://buildstats.info/nuget/GLESDotNet)](https://www.nuget.org/packages/GLESDotNet/)
 
 # GLESDotNet
 
