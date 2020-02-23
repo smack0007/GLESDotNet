@@ -10,7 +10,7 @@
   <ItemGroup>
     <PackageReference Include="GLFWDotNet" Version="20.2.1" />
 
-    <PackageReference Include="ImageDotNet" Version="20.2.1" />
+    <PackageReference Include="ImageDotNet" Version="20.2.2" />
 
     <!-- I use this sometimes for debugging ImageDotNet -->
     <!--<ProjectReference Include="$(RepositoryRootDirectory)../ImageDotNet/src/ImageDotNet/ImageDotNet.csproj" />-->
