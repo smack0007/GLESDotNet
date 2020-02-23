@@ -8,7 +8,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="GLFWDotNet" Version="20.2.0" />
+    <PackageReference Include="GLFWDotNet" Version="20.2.1" />
 
     <PackageReference Include="ImageDotNet" Version="20.2.1" />
 
