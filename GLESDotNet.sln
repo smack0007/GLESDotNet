@@ -38,8 +38,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sprites", "samples\Sprites\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flames", "samples\Flames\Flames.csproj", "{60FB594F-CCA8-4882-8DCA-7E8BA3B165D7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageDotNet", "..\ImageDotNet\src\ImageDotNet\ImageDotNet.csproj", "{41FD2F24-E433-4F23-9C6B-5D8D2723D24A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -146,18 +144,6 @@ Global
 		{60FB594F-CCA8-4882-8DCA-7E8BA3B165D7}.Release|x64.Build.0 = Release|Any CPU
 		{60FB594F-CCA8-4882-8DCA-7E8BA3B165D7}.Release|x86.ActiveCfg = Release|Any CPU
 		{60FB594F-CCA8-4882-8DCA-7E8BA3B165D7}.Release|x86.Build.0 = Release|Any CPU
-		{41FD2F24-E433-4F23-9C6B-5D8D2723D24A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{41FD2F24-E433-4F23-9C6B-5D8D2723D24A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{41FD2F24-E433-4F23-9C6B-5D8D2723D24A}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{41FD2F24-E433-4F23-9C6B-5D8D2723D24A}.Debug|x64.Build.0 = Debug|Any CPU
-		{41FD2F24-E433-4F23-9C6B-5D8D2723D24A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{41FD2F24-E433-4F23-9C6B-5D8D2723D24A}.Debug|x86.Build.0 = Debug|Any CPU
-		{41FD2F24-E433-4F23-9C6B-5D8D2723D24A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{41FD2F24-E433-4F23-9C6B-5D8D2723D24A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{41FD2F24-E433-4F23-9C6B-5D8D2723D24A}.Release|x64.ActiveCfg = Release|Any CPU
-		{41FD2F24-E433-4F23-9C6B-5D8D2723D24A}.Release|x64.Build.0 = Release|Any CPU
-		{41FD2F24-E433-4F23-9C6B-5D8D2723D24A}.Release|x86.ActiveCfg = Release|Any CPU
-		{41FD2F24-E433-4F23-9C6B-5D8D2723D24A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
