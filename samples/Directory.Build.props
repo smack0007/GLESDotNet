@@ -8,6 +8,9 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <!-- Exclude the License.txt from samples. -->
+    <None Remove="$(MSBuildThisFileDirectory)License.txt" />
+    
     <PackageReference Include="GLFWDotNet" Version="20.9.0" />
 
     <PackageReference Include="ImageDotNet" Version="20.2.2" />
