@@ -8,10 +8,18 @@ namespace Sprites
 {
     public unsafe class SpritesSample : Sample
     {
-        private static uint _program;
-        private static int _vertTransformLocation;
-        private static int _fragTextureLocation;
-        private static uint _texture;
+        private uint _program;
+        private int _vertTransformLocation;
+        private int _fragTextureLocation;
+        private uint _texture;
+
+        private const int VertsPerSprite = 6;
+        private const int MaxSpriteCount = 1024;
+
+        private int _spriteCount = 0;
+        private float[] _vertPositions = new float[MaxSpriteCount * VertsPerSprite * 3];
+        private float[] _vertColors = new float[MaxSpriteCount * VertsPerSprite * 3];
+        private float[] _vertTexCoords = new float[MaxSpriteCount * VertsPerSprite * 2];
 
         public static void Main(string[] args)
         {
@@ -149,6 +157,53 @@ void main()
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         }
 
+        private void AddSprite(float x, float y, float width, float height)
+        {
+            float[] vertPositions = new float[]
+            {
+                x, y, 0.0f,
+                x + width, y, 0.0f,
+                x, y + height, 0.0f,
+
+                x + width, y, 0.0f,
+                x + width, y + height, 0.0f,
+                x, y + height, 0.0f,
+            };
+
+            int offset = _spriteCount * VertsPerSprite * 3 * sizeof(float);
+            Buffer.BlockCopy(vertPositions, 0, _vertPositions, offset, VertsPerSprite * 3 * sizeof(float));
+
+            float[] vertColors = new float[]
+            {
+                1.0f, 1.0f, 1.0f,
+                1.0f, 1.0f, 1.0f,
+                1.0f, 1.0f, 1.0f,
+
+                1.0f, 1.0f, 1.0f,
+                1.0f, 1.0f, 1.0f,
+                1.0f, 1.0f, 1.0f
+            };
+
+            offset = _spriteCount * VertsPerSprite * 3 * sizeof(float);
+            Buffer.BlockCopy(vertColors, 0, _vertColors, offset, VertsPerSprite * 3 * sizeof(float));
+
+            float[] vertTexCoords = new float[]
+            {
+                0.0f, 0.0f,
+                1.0f, 0.0f,
+                0.0f, 1.0f,
+
+                1.0f, 0.0f,
+                1.0f, 1.0f,
+                0.0f, 1.0f
+            };
+
+            offset = _spriteCount * VertsPerSprite * 2 * sizeof(float);
+            Buffer.BlockCopy(vertTexCoords, 0, _vertTexCoords, offset, VertsPerSprite * 2 * sizeof(float));
+
+            _spriteCount++;
+        }
+
         protected override void Draw()
         {
             int[] viewport = new int[4];
@@ -169,59 +224,32 @@ void main()
                 -1.0f, 1.0f, 0.0f, 1.0f,
             };
 
-            float[] vertPositions = new float[]
-            {
-                0.0f, 0.0f, 0.0f,
-                256.0f, 0.0f, 0.0f,
-                0.0f, 256.0f, 0.0f,
-
-                256.0f, 0.0f, 0.0f,
-                256.0f, 256.0f, 0.0f,
-                0.0f, 256.0f, 0.0f,
-            };
-
-            float[] vertColors = new float[]
-            {
-                1.0f, 1.0f, 1.0f,
-                1.0f, 1.0f, 1.0f,
-                1.0f, 1.0f, 1.0f,
-
-                1.0f, 1.0f, 1.0f,
-                1.0f, 1.0f, 1.0f,
-                1.0f, 1.0f, 1.0f
-            };
-
-            float[] vertTexCoords = new float[]
-            {
-                0.0f, 0.0f,
-                1.0f, 0.0f,
-                0.0f, 1.0f,
-
-                1.0f, 0.0f,
-                1.0f, 1.0f,
-                0.0f, 1.0f
-            };
+            _spriteCount = 0;
+            AddSprite(0, 0, 256, 256);
+            AddSprite(256, 0, 256, 256);
+            AddSprite(0, 256, 256, 256);
+            AddSprite(256, 256, 256, 256);
 
             glViewport(0, 0, WindowWidth, WindowHeight);
             glClear(GL_COLOR_BUFFER_BIT);
 
             glUseProgram(_program);
 
-            fixed (void* vertPositionsPtr = vertPositions)
+            fixed (void* vertPositionsPtr = _vertPositions)
             {
                 glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, vertPositionsPtr);
             }
 
             glEnableVertexAttribArray(0);
 
-            fixed (void* vertColorsPtr = vertColors)
+            fixed (void* vertColorsPtr = _vertColors)
             {
                 glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, vertColorsPtr);
             }
 
             glEnableVertexAttribArray(1);
 
-            fixed (void* vertTexCoordsPtr = vertTexCoords)
+            fixed (void* vertTexCoordsPtr = _vertTexCoords)
             {
                 glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, vertTexCoordsPtr);
             }
@@ -238,7 +266,7 @@ void main()
 
             glUniform1i(_fragTextureLocation, 0);
 
-            glDrawArrays(GL_TRIANGLES, 0, 6);
+            glDrawArrays(GL_TRIANGLES, 0, _spriteCount * VertsPerSprite);
         }
     }
 }

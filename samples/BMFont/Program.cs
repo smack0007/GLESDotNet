@@ -4,22 +4,23 @@ using System.Text;
 using GLESDotNet.Samples;
 using ImageDotNet;
 
-namespace HelloTextures
+namespace BMFont
 {
-    public unsafe class HelloTexturesSample : Sample
+    public unsafe class BMFontSample : Sample
     {
-        private uint _program;
-        private int _fragTextureLocation;
-        private uint _texture;
+        private static uint _program;
+        private static int _vertTransformLocation;
+        private static int _fragTextureLocation;
+        private static uint _texture;
 
         public static void Main(string[] args)
         {
-            using (var sample = new HelloTexturesSample())
-                sample.Run();
+            using var sample = new BMFontSample();
+            sample.Run();
         }
 
-        public HelloTexturesSample()
-            : base("Hello Textures")
+        public BMFontSample()
+            : base("Sprites")
         {
         }
 
@@ -88,9 +89,11 @@ attribute vec2 vertTexCoord;
 varying vec3 fragColor;
 varying vec2 fragTexCoord;
 
+uniform mat4 vertTransform; 
+
 void main()
 {
-    gl_Position = vec4(vertPosition, 1.0);
+    gl_Position = vertTransform * vec4(vertPosition, 1.0);
     fragColor = vertColor;
     fragTexCoord = vertTexCoord;
 }";
@@ -123,6 +126,7 @@ void main()
             glBindAttribLocation(_program, 2, "vertTexCoord");
             LinkProgram(_program);
 
+            _vertTransformLocation = glGetUniformLocation(_program, "vertTransform");
             _fragTextureLocation = glGetUniformLocation(_program, "fragTexture");
 
             uint texture;
@@ -132,11 +136,10 @@ void main()
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, _texture);
 
-            // Image is an RGBImage.
-            var image = Image.LoadTga("Box.tga").To<Rgb24>();
+            var image = (Image<Rgba32>)Image.LoadPng("Hack_0.png");
             using (var data = image.GetDataPointer())
             {
-                glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGB, image.Width, image.Height, 0, GL_RGB, GL_UNSIGNED_BYTE, (void*)data.Pointer);
+                glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA, image.Width, image.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void*)data.Pointer);
             }
 
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)GL_LINEAR);
@@ -147,15 +150,33 @@ void main()
 
         protected override void Draw()
         {
+            int[] viewport = new int[4];
+
+            fixed (int* viewportPtr = viewport)
+            {
+                glGetIntegerv(GL_VIEWPORT, viewportPtr);
+            }
+
+            float m11 = 2f / viewport[2];
+            float m22 = -2f / viewport[3];
+
+            float[] transform = new float[]
+            {
+                m11, 0.0f, 0.0f, 0.0f,
+                0.0f, m22, 0.0f, 0.0f,
+                0.0f, 0.0f, 1.0f, 0.0f,
+                -1.0f, 1.0f, 0.0f, 1.0f,
+            };
+
             float[] vertPositions = new float[]
             {
-                -0.5f, 0.5f, 0.0f,
-                0.5f, 0.5f, 0.0f,
-                -0.5f, -0.5f, 0.0f,
+                0.0f, 0.0f, 0.0f,
+                256.0f, 0.0f, 0.0f,
+                0.0f, 256.0f, 0.0f,
 
-                0.5f, 0.5f, 0.0f,
-                0.5f, -0.5f, 0.0f,
-                -0.5f, -0.5f, 0.0f,
+                256.0f, 0.0f, 0.0f,
+                256.0f, 256.0f, 0.0f,
+                0.0f, 256.0f, 0.0f,
             };
 
             float[] vertColors = new float[]
@@ -208,6 +229,12 @@ void main()
 
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, _texture);
+
+            fixed (float* transformPtr = transform)
+            {
+                glUniformMatrix4fv(_vertTransformLocation, 1, false, transformPtr);
+            }
+
             glUniform1i(_fragTextureLocation, 0);
 
             glDrawArrays(GL_TRIANGLES, 0, 6);
