@@ -3,23 +3,33 @@ using static GLESDotNet.GLES2;
 using System.Text;
 using GLESDotNet.Samples;
 using ImageDotNet;
+using System.Numerics;
 
 namespace Sprites
 {
+    public struct Texture
+    {
+        public uint Handle { get; set; }
+
+        public int Width { get; set; }
+
+        public int Height { get; set; }
+    }
+
     public unsafe class SpritesSample : Sample
     {
         private uint _program;
         private int _vertTransformLocation;
         private int _fragTextureLocation;
-        private uint _texture;
+        private Texture _texture;
 
         private const int VertsPerSprite = 6;
         private const int MaxSpriteCount = 1024;
 
         private int _spriteCount = 0;
-        private float[] _vertPositions = new float[MaxSpriteCount * VertsPerSprite * 3];
-        private float[] _vertColors = new float[MaxSpriteCount * VertsPerSprite * 3];
-        private float[] _vertTexCoords = new float[MaxSpriteCount * VertsPerSprite * 2];
+        private Vector3[] _vertPositions = new Vector3[MaxSpriteCount * VertsPerSprite];
+        private Vector3[] _vertColors = new Vector3[MaxSpriteCount * VertsPerSprite];
+        private Vector2[] _vertTexCoords = new Vector2[MaxSpriteCount * VertsPerSprite];
 
         public static void Main(string[] args)
         {
@@ -139,17 +149,17 @@ void main()
 
             uint texture;
             glGenTextures(1, &texture);
-            _texture = texture;
 
             glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, _texture);
+            glBindTexture(GL_TEXTURE_2D, texture);
 
-            // Image is an RGBImage.
-            var image = Image.LoadTga("Box.tga").To<Rgb24>();
+            var image = Image.LoadPng("smiley.png");
             using (var data = image.GetDataPointer())
             {
-                glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGB, image.Width, image.Height, 0, GL_RGB, GL_UNSIGNED_BYTE, (void*)data.Pointer);
+                glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA, image.Width, image.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void*)data.Pointer);
             }
+
+            _texture = new Texture() { Handle = texture, Width = image.Width, Height = image.Height };
 
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)GL_LINEAR);
@@ -157,49 +167,76 @@ void main()
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         }
 
-        private void AddSprite(float x, float y, float width, float height)
+        private void AddSprite(
+            Vector2 position,
+            Vector2 size,
+            int srcX,
+            int srcY,
+            int srcWidth,
+            int srcHeight)
         {
-            float[] vertPositions = new float[]
+            var spriteVertPositions = new Vector3[]
             {
-                x, y, 0.0f,
-                x + width, y, 0.0f,
-                x, y + height, 0.0f,
+                new Vector3(position.X, position.Y, 0.0f),
+                new Vector3(position.X + size.X, position.Y, 0.0f),
+                new Vector3(position.X, position.Y + size.Y, 0.0f),
 
-                x + width, y, 0.0f,
-                x + width, y + height, 0.0f,
-                x, y + height, 0.0f,
+                new Vector3(position.X + size.X, position.Y, 0.0f),
+                new Vector3(position.X + size.X, position.Y + size.Y, 0.0f),
+                new Vector3(position.X, position.Y + size.Y, 0.0f),
             };
 
-            int offset = _spriteCount * VertsPerSprite * 3 * sizeof(float);
-            Buffer.BlockCopy(vertPositions, 0, _vertPositions, offset, VertsPerSprite * 3 * sizeof(float));
-
-            float[] vertColors = new float[]
+            fixed (Vector3* srcPtr = spriteVertPositions)
+            fixed (Vector3* destPtr = _vertPositions)
             {
-                1.0f, 1.0f, 1.0f,
-                1.0f, 1.0f, 1.0f,
-                1.0f, 1.0f, 1.0f,
+                Buffer.MemoryCopy(
+                    srcPtr,
+                    destPtr + (_spriteCount * VertsPerSprite),
+                    VertsPerSprite * sizeof(Vector3),
+                    VertsPerSprite * sizeof(Vector3));
+            }
 
-                1.0f, 1.0f, 1.0f,
-                1.0f, 1.0f, 1.0f,
-                1.0f, 1.0f, 1.0f
+            var spriteVertColors = new Vector3[]
+            {
+                new Vector3(1.0f, 1.0f, 1.0f),
+                new Vector3(1.0f, 1.0f, 1.0f),
+                new Vector3(1.0f, 1.0f, 1.0f),
+
+                new Vector3(1.0f, 1.0f, 1.0f),
+                new Vector3(1.0f, 1.0f, 1.0f),
+                new Vector3(1.0f, 1.0f, 1.0f)
             };
 
-            offset = _spriteCount * VertsPerSprite * 3 * sizeof(float);
-            Buffer.BlockCopy(vertColors, 0, _vertColors, offset, VertsPerSprite * 3 * sizeof(float));
-
-            float[] vertTexCoords = new float[]
+            fixed (Vector3* srcPtr = spriteVertColors)
+            fixed (Vector3* destPtr = _vertColors)
             {
-                0.0f, 0.0f,
-                1.0f, 0.0f,
-                0.0f, 1.0f,
+                Buffer.MemoryCopy(
+                    srcPtr,
+                    destPtr + (_spriteCount * VertsPerSprite),
+                    VertsPerSprite * sizeof(Vector3),
+                    VertsPerSprite * sizeof(Vector3));
+            }
 
-                1.0f, 0.0f,
-                1.0f, 1.0f,
-                0.0f, 1.0f
+            var spriteVertTexCoords = new Vector2[]
+            {
+                new Vector2(srcX / (float)_texture.Width, srcY / (float)_texture.Height),
+                new Vector2((srcX + srcWidth) / (float)_texture.Width, srcY / (float)_texture.Height),
+                new Vector2(srcX / (float)_texture.Width, (srcY + srcHeight) / (float)_texture.Height),
+
+                new Vector2((srcX + srcWidth) / (float)_texture.Width, srcY / (float)_texture.Height),
+                new Vector2((srcX + srcWidth) / (float)_texture.Width, (srcY + srcHeight) / (float)_texture.Height),
+                new Vector2(srcX / (float)_texture.Width, (srcY + srcHeight) / (float)_texture.Height),
             };
 
-            offset = _spriteCount * VertsPerSprite * 2 * sizeof(float);
-            Buffer.BlockCopy(vertTexCoords, 0, _vertTexCoords, offset, VertsPerSprite * 2 * sizeof(float));
+            fixed (Vector2* srcPtr = spriteVertTexCoords)
+            fixed (Vector2* destPtr = _vertTexCoords)
+            {
+                Buffer.MemoryCopy(
+                    srcPtr,
+                    destPtr + (_spriteCount * VertsPerSprite),
+                    VertsPerSprite * sizeof(Vector2),
+                    VertsPerSprite * sizeof(Vector2));
+            }
 
             _spriteCount++;
         }
@@ -225,10 +262,10 @@ void main()
             };
 
             _spriteCount = 0;
-            AddSprite(0, 0, 256, 256);
-            AddSprite(256, 0, 256, 256);
-            AddSprite(0, 256, 256, 256);
-            AddSprite(256, 256, 256, 256);
+            AddSprite(new Vector2(0, 0), new Vector2(128, 128), 0, 0, 128, 128);
+            AddSprite(new Vector2(128, 0), new Vector2(128, 128), 128, 0, 128, 128);
+            AddSprite(new Vector2(0, 128), new Vector2(128, 128), 0, 128, 128, 128);
+            AddSprite(new Vector2(128, 128), new Vector2(128, 128), 128, 128, 128, 128);
 
             glViewport(0, 0, WindowWidth, WindowHeight);
             glClear(GL_COLOR_BUFFER_BIT);
@@ -257,7 +294,7 @@ void main()
             glEnableVertexAttribArray(2);
 
             glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, _texture);
+            glBindTexture(GL_TEXTURE_2D, _texture.Handle);
 
             fixed (float* transformPtr = transform)
             {
