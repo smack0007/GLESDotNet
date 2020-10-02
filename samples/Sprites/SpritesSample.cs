@@ -28,7 +28,7 @@ namespace Sprites
 
         private int _spriteCount = 0;
         private Vector3[] _vertPositions = new Vector3[MaxSpriteCount * VertsPerSprite];
-        private Vector3[] _vertColors = new Vector3[MaxSpriteCount * VertsPerSprite];
+        private Vector4[] _vertColors = new Vector4[MaxSpriteCount * VertsPerSprite];
         private Vector2[] _vertTexCoords = new Vector2[MaxSpriteCount * VertsPerSprite];
 
         public static void Main(string[] args)
@@ -101,10 +101,10 @@ namespace Sprites
         {
             string vertShader =
 @"attribute vec3 vertPosition;
-attribute vec3 vertColor;
+attribute vec4 vertColor;
 attribute vec2 vertTexCoord;
 
-varying vec3 fragColor;
+varying vec4 fragColor;
 varying vec2 fragTexCoord;
 
 uniform mat4 vertTransform; 
@@ -119,14 +119,14 @@ void main()
             string fragShader =
 @"precision mediump float;
 
-varying vec3 fragColor;
+varying vec4 fragColor;
 varying vec2 fragTexCoord;
 
 uniform sampler2D fragTexture;
 
 void main()
 {
-    gl_FragColor = texture2D(fragTexture, fragTexCoord);
+    gl_FragColor = fragColor * texture2D(fragTexture, fragTexCoord);
 }";
 
             uint vertexShader = CompileShader(vertShader, GL_VERTEX_SHADER);
@@ -173,7 +173,8 @@ void main()
             int srcX,
             int srcY,
             int srcWidth,
-            int srcHeight)
+            int srcHeight,
+            Vector4 color)
         {
             var spriteVertPositions = new Vector3[]
             {
@@ -196,25 +197,25 @@ void main()
                     VertsPerSprite * sizeof(Vector3));
             }
 
-            var spriteVertColors = new Vector3[]
+            var spriteVertColors = new Vector4[]
             {
-                new Vector3(1.0f, 1.0f, 1.0f),
-                new Vector3(1.0f, 1.0f, 1.0f),
-                new Vector3(1.0f, 1.0f, 1.0f),
+                color,
+                color,
+                color,
 
-                new Vector3(1.0f, 1.0f, 1.0f),
-                new Vector3(1.0f, 1.0f, 1.0f),
-                new Vector3(1.0f, 1.0f, 1.0f)
+                color,
+                color,
+                color,
             };
 
-            fixed (Vector3* srcPtr = spriteVertColors)
-            fixed (Vector3* destPtr = _vertColors)
+            fixed (Vector4* srcPtr = spriteVertColors)
+            fixed (Vector4* destPtr = _vertColors)
             {
                 Buffer.MemoryCopy(
                     srcPtr,
                     destPtr + (_spriteCount * VertsPerSprite),
-                    VertsPerSprite * sizeof(Vector3),
-                    VertsPerSprite * sizeof(Vector3));
+                    VertsPerSprite * sizeof(Vector4),
+                    VertsPerSprite * sizeof(Vector4));
             }
 
             var spriteVertTexCoords = new Vector2[]
@@ -262,10 +263,10 @@ void main()
             };
 
             _spriteCount = 0;
-            AddSprite(new Vector2(0, 0), new Vector2(128, 128), 0, 0, 128, 128);
-            AddSprite(new Vector2(128, 0), new Vector2(128, 128), 128, 0, 128, 128);
-            AddSprite(new Vector2(0, 128), new Vector2(128, 128), 0, 128, 128, 128);
-            AddSprite(new Vector2(128, 128), new Vector2(128, 128), 128, 128, 128, 128);
+            AddSprite(new Vector2(0, 0), new Vector2(128, 128), 0, 0, 128, 128, new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+            AddSprite(new Vector2(128, 0), new Vector2(128, 128), 128, 0, 128, 128, new Vector4(0.0f, 1.0f, 0.0f, 1.0f));
+            AddSprite(new Vector2(0, 128), new Vector2(128, 128), 0, 128, 128, 128, new Vector4(0.0f, 0.0f, 1.0f, 1.0f));
+            AddSprite(new Vector2(128, 128), new Vector2(128, 128), 128, 128, 128, 128, new Vector4(1.0f, 0.0f, 1.0f, 1.0f));
 
             glViewport(0, 0, WindowWidth, WindowHeight);
             glClear(GL_COLOR_BUFFER_BIT);
@@ -281,7 +282,7 @@ void main()
 
             fixed (void* vertColorsPtr = _vertColors)
             {
-                glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, vertColorsPtr);
+                glVertexAttribPointer(1, 4, GL_FLOAT, false, 0, vertColorsPtr);
             }
 
             glEnableVertexAttribArray(1);
