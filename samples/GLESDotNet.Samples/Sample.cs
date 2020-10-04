@@ -84,10 +84,7 @@ namespace GLESDotNet.Samples
 
         private IntPtr GetNativeWindowHandle()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return glfwGetWin32Window(_window);
-
-            throw new NotImplementedException($"{nameof(GetNativeWindowHandle)} not implemented on this platform.");
+            return glfwGetNativeWindow(_window);
         }
 
         private unsafe void CreateContext()
