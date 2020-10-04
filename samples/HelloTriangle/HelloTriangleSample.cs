@@ -114,6 +114,9 @@ void main()
             LinkProgram(_program);
 
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+            glEnableVertexAttribArray(0);
+            glEnableVertexAttribArray(1);
         }
 
         protected override void Draw()
@@ -142,14 +145,10 @@ void main()
                 glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, vPositionsPtr);
             }
 
-            glEnableVertexAttribArray(0);
-
             fixed (void* vertColorsPtr = vertColors)
             {
                 glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, vertColorsPtr);
             }
-            
-            glEnableVertexAttribArray(1);
 
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }

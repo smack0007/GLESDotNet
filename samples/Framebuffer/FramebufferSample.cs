@@ -203,6 +203,10 @@ void main()
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+            glEnableVertexAttribArray(0);
+            glEnableVertexAttribArray(1);
+            glEnableVertexAttribArray(2);
         }
 
         protected override void Update(float elapsed)
@@ -291,21 +295,15 @@ void main()
                 glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, vertPositionsPtr);
             }
 
-            glEnableVertexAttribArray(0);
-
             fixed (void* vertColorsPtr = vertColors)
             {
                 glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, vertColorsPtr);
             }
 
-            glEnableVertexAttribArray(1);
-
             fixed (void* vertTexCoordsPtr = vertTexCoords)
             {
                 glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, vertTexCoordsPtr);
             }
-
-            glEnableVertexAttribArray(2);
 
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, _texture);
@@ -326,21 +324,15 @@ void main()
                 glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, screenVertPositionsPtr);
             }
 
-            glEnableVertexAttribArray(0);
-
             fixed (void* screenVertColorsPtr = screenVertColors)
             {
                 glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, screenVertColorsPtr);
             }
 
-            glEnableVertexAttribArray(1);
-
             fixed (void* screenVertTexCoordsPtr = screenVertTexCoords)
             {
                 glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, screenVertTexCoordsPtr);
-            }
-
-            glEnableVertexAttribArray(2);
+            }            
 
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, _framebufferTexture);

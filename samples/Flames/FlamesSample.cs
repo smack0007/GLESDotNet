@@ -256,6 +256,9 @@ void main()
             glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
+            glEnableVertexAttribArray(0);
+            glEnableVertexAttribArray(1);
+
             // Initialize the bottom row of pixels with the last color.
             for (int x = 0; x < _fireWidth; x++)
                 SetFirePixel(x, _fireHeight - 1, _fireColors.Length - 1);
@@ -333,14 +336,10 @@ void main()
                 glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, vertPositionsPtr);
             }
 
-            glEnableVertexAttribArray(0);
-
             fixed (void* vertTexCoordsPtr = vertTexCoords)
             {
                 glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, vertTexCoordsPtr);
             }
-
-            glEnableVertexAttribArray(1);
 
             fixed (float* transformPtr = transform)
             {

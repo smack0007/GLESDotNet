@@ -165,6 +165,10 @@ void main()
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)GL_LINEAR);
 
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+            glEnableVertexAttribArray(0);
+            glEnableVertexAttribArray(1);
+            glEnableVertexAttribArray(2);
         }
 
         private void AddSprite(
@@ -278,21 +282,15 @@ void main()
                 glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, vertPositionsPtr);
             }
 
-            glEnableVertexAttribArray(0);
-
             fixed (void* vertColorsPtr = _vertColors)
             {
                 glVertexAttribPointer(1, 4, GL_FLOAT, false, 0, vertColorsPtr);
             }
 
-            glEnableVertexAttribArray(1);
-
             fixed (void* vertTexCoordsPtr = _vertTexCoords)
             {
                 glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, vertTexCoordsPtr);
             }
-
-            glEnableVertexAttribArray(2);
 
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, _texture.Handle);
