@@ -4,6 +4,7 @@ using System.Text;
 using GLESDotNet.Samples;
 using ImageDotNet;
 using System.Numerics;
+using System.Globalization;
 
 namespace Sprites
 {
@@ -21,7 +22,10 @@ namespace Sprites
         private uint _program;
         private int _vertTransformLocation;
         private int _fragTextureLocation;
-        private Texture _texture;
+        private uint _textureHandle;
+
+        private Texture _glesTexture;
+        private Texture _smileyTexture;
 
         private const int VertsPerSprite = 6;
         private const int MaxSpriteCount = 1024;
@@ -97,6 +101,26 @@ namespace Sprites
             }
         }
 
+        private static Texture LoadTexture(string fileName)
+        {
+            uint handle;
+            glGenTextures(1, &handle);
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, handle);
+
+            var image = Image.LoadPng(fileName).To<Rgba32>();
+            using (var data = image.GetDataPointer())
+            {
+                glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA, image.Width, image.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void*)data.Pointer);
+            }
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)GL_LINEAR);
+
+            return new Texture() { Handle = handle, Width = image.Width, Height = image.Height };
+        }
+
         protected override void Initialize()
         {
             string vertShader =
@@ -147,23 +171,11 @@ void main()
             _vertTransformLocation = glGetUniformLocation(_program, "vertTransform");
             _fragTextureLocation = glGetUniformLocation(_program, "fragTexture");
 
-            uint texture;
-            glGenTextures(1, &texture);
+            _glesTexture = LoadTexture("opengles.png");
+            _smileyTexture = LoadTexture("smiley.png");
 
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, texture);
-
-            var image = Image.LoadPng("smiley.png");
-            using (var data = image.GetDataPointer())
-            {
-                glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA, image.Width, image.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void*)data.Pointer);
-            }
-
-            _texture = new Texture() { Handle = texture, Width = image.Width, Height = image.Height };
-
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)GL_LINEAR);
-
+            glEnable(GL_BLEND);
+            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
             glEnableVertexAttribArray(0);
@@ -172,6 +184,7 @@ void main()
         }
 
         private void AddSprite(
+            ref Texture texture,
             Vector2 position,
             Vector2 size,
             int srcX,
@@ -180,6 +193,11 @@ void main()
             int srcHeight,
             Vector4 color)
         {
+            if (texture.Handle != _textureHandle)
+                Flush();
+
+            _textureHandle = texture.Handle;
+
             var spriteVertPositions = new Vector3[]
             {
                 new Vector3(position.X, position.Y, 0.0f),
@@ -224,13 +242,13 @@ void main()
 
             var spriteVertTexCoords = new Vector2[]
             {
-                new Vector2(srcX / (float)_texture.Width, srcY / (float)_texture.Height),
-                new Vector2((srcX + srcWidth) / (float)_texture.Width, srcY / (float)_texture.Height),
-                new Vector2(srcX / (float)_texture.Width, (srcY + srcHeight) / (float)_texture.Height),
+                new Vector2(srcX / (float)texture.Width, srcY / (float)texture.Height),
+                new Vector2((srcX + srcWidth) / (float)texture.Width, srcY / (float)texture.Height),
+                new Vector2(srcX / (float)texture.Width, (srcY + srcHeight) / (float)texture.Height),
 
-                new Vector2((srcX + srcWidth) / (float)_texture.Width, srcY / (float)_texture.Height),
-                new Vector2((srcX + srcWidth) / (float)_texture.Width, (srcY + srcHeight) / (float)_texture.Height),
-                new Vector2(srcX / (float)_texture.Width, (srcY + srcHeight) / (float)_texture.Height),
+                new Vector2((srcX + srcWidth) / (float)texture.Width, srcY / (float)texture.Height),
+                new Vector2((srcX + srcWidth) / (float)texture.Width, (srcY + srcHeight) / (float)texture.Height),
+                new Vector2(srcX / (float)texture.Width, (srcY + srcHeight) / (float)texture.Height),
             };
 
             fixed (Vector2* srcPtr = spriteVertTexCoords)
@@ -248,15 +266,54 @@ void main()
 
         protected override void Draw()
         {
-            int[] viewport = new int[4];
+            glViewport(0, 0, WindowWidth, WindowHeight);
+            glClear(GL_COLOR_BUFFER_BIT);
 
-            fixed (int* viewportPtr = viewport)
-            {
-                glGetIntegerv(GL_VIEWPORT, viewportPtr);
-            }
+            AddSprite(
+                ref _glesTexture,
+                new Vector2(WindowWidth / 2 - _glesTexture.Width / 2, WindowHeight / 2 - _glesTexture.Height / 2),
+                new Vector2(_glesTexture.Width, _glesTexture.Height),
+                0, 0, _glesTexture.Width, _glesTexture.Height,
+                Vector4.One);
 
-            float m11 = 2f / viewport[2];
-            float m22 = -2f / viewport[3];
+            AddSprite(
+                ref _smileyTexture,
+                new Vector2(0, 0),
+                new Vector2(128, 128),
+                0, 0, 128, 128,
+                new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+
+            AddSprite(
+                ref _smileyTexture,
+                new Vector2(128, 0),
+                new Vector2(128, 128),
+                128, 0, 128, 128,
+                new Vector4(0.0f, 1.0f, 0.0f, 1.0f));
+
+            AddSprite(
+                ref _smileyTexture,
+                new Vector2(0, 128),
+                new Vector2(128, 128),
+                0, 128, 128, 128,
+                new Vector4(0.0f, 0.0f, 1.0f, 1.0f));
+
+            AddSprite(
+                ref _smileyTexture,
+                new Vector2(128, 128),
+                new Vector2(128, 128),
+                128, 128, 128, 128,
+                new Vector4(1.0f, 0.0f, 1.0f, 1.0f));
+
+            Flush();
+        }
+
+        private void Flush()
+        {
+            if (_spriteCount <= 0)
+                return;
+
+            float m11 = 2f / WindowWidth;
+            float m22 = -2f / WindowHeight;
 
             float[] transform = new float[]
             {
@@ -265,15 +322,6 @@ void main()
                 0.0f, 0.0f, 1.0f, 0.0f,
                 -1.0f, 1.0f, 0.0f, 1.0f,
             };
-
-            _spriteCount = 0;
-            AddSprite(new Vector2(0, 0), new Vector2(128, 128), 0, 0, 128, 128, new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-            AddSprite(new Vector2(128, 0), new Vector2(128, 128), 128, 0, 128, 128, new Vector4(0.0f, 1.0f, 0.0f, 1.0f));
-            AddSprite(new Vector2(0, 128), new Vector2(128, 128), 0, 128, 128, 128, new Vector4(0.0f, 0.0f, 1.0f, 1.0f));
-            AddSprite(new Vector2(128, 128), new Vector2(128, 128), 128, 128, 128, 128, new Vector4(1.0f, 0.0f, 1.0f, 1.0f));
-
-            glViewport(0, 0, WindowWidth, WindowHeight);
-            glClear(GL_COLOR_BUFFER_BIT);
 
             glUseProgram(_program);
 
@@ -293,7 +341,7 @@ void main()
             }
 
             glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, _texture.Handle);
+            glBindTexture(GL_TEXTURE_2D, _textureHandle);
 
             fixed (float* transformPtr = transform)
             {
@@ -303,6 +351,8 @@ void main()
             glUniform1i(_fragTextureLocation, 0);
 
             glDrawArrays(GL_TRIANGLES, 0, _spriteCount * VertsPerSprite);
+
+            _spriteCount = 0;
         }
     }
 }

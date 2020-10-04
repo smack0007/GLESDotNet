@@ -9,6 +9,10 @@
     <Content Include="..\assets\smiley.png" Link="smiley.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+
+    <Content Include="..\assets\opengles.png" Link="opengles.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
