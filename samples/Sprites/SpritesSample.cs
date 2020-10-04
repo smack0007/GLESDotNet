@@ -8,13 +8,28 @@ using System.Globalization;
 
 namespace Sprites
 {
-    public struct Texture
+    public struct TextureData
     {
         public uint Handle { get; set; }
 
         public int Width { get; set; }
 
         public int Height { get; set; }
+    }
+
+    public struct SmileyData
+    {
+        public int SrcX { get; set; }
+        
+        public int SrcY { get; set; }
+
+        public int SrcWidth { get; set; }
+
+        public int SrcHeight { get; set; }
+
+        public Vector2 Position { get; set; }
+
+        public Vector4 Tint { get; set; }
     }
 
     public unsafe class SpritesSample : Sample
@@ -24,8 +39,8 @@ namespace Sprites
         private int _fragTextureLocation;
         private uint _textureHandle;
 
-        private Texture _glesTexture;
-        private Texture _smileyTexture;
+        private TextureData _glesTexture;
+        private TextureData _smileyTexture;
 
         private const int VertsPerSprite = 6;
         private const int MaxSpriteCount = 1024;
@@ -34,6 +49,9 @@ namespace Sprites
         private Vector3[] _vertPositions = new Vector3[MaxSpriteCount * VertsPerSprite];
         private Vector4[] _vertColors = new Vector4[MaxSpriteCount * VertsPerSprite];
         private Vector2[] _vertTexCoords = new Vector2[MaxSpriteCount * VertsPerSprite];
+
+        private const int SmileyCount = 256;
+        private SmileyData[] _smileys = new SmileyData[SmileyCount];
 
         public static void Main(string[] args)
         {
@@ -101,7 +119,7 @@ namespace Sprites
             }
         }
 
-        private static Texture LoadTexture(string fileName)
+        private static TextureData LoadTexture(string fileName)
         {
             uint handle;
             glGenTextures(1, &handle);
@@ -118,7 +136,7 @@ namespace Sprites
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)GL_LINEAR);
 
-            return new Texture() { Handle = handle, Width = image.Width, Height = image.Height };
+            return new TextureData() { Handle = handle, Width = image.Width, Height = image.Height };
         }
 
         protected override void Initialize()
@@ -181,17 +199,55 @@ void main()
             glEnableVertexAttribArray(0);
             glEnableVertexAttribArray(1);
             glEnableVertexAttribArray(2);
+
+            var random = new Random();
+            for (int i = 0; i < _smileys.Length; i++)
+            {
+                _smileys[i].SrcWidth = 128;
+                _smileys[i].SrcHeight = 128;
+
+                switch (random.Next(4))
+                {
+                    case 0:
+                        _smileys[i].SrcX = 0;
+                        _smileys[i].SrcY = 0;
+                        break;
+
+                    case 1:
+                        _smileys[i].SrcX = 128;
+                        _smileys[i].SrcY = 0;
+                        break;
+
+                    case 2:
+                        _smileys[i].SrcX = 0;
+                        _smileys[i].SrcY = 128;
+                        break;
+
+                    case 3:
+                        _smileys[i].SrcX = 128;
+                        _smileys[i].SrcY = 128;
+                        break;
+                }
+
+                _smileys[i].Position = new Vector2(random.Next(WindowWidth), random.Next(WindowHeight));
+                
+                _smileys[i].Tint = new Vector4(
+                    (float)random.NextDouble(),
+                    (float)random.NextDouble(),
+                    (float)random.NextDouble(),
+                    (float)random.NextDouble());
+            }
         }
 
         private void AddSprite(
-            ref Texture texture,
-            Vector2 position,
-            Vector2 size,
+            in TextureData texture,
+            in Vector2 position,
+            in Vector2 size,
             int srcX,
             int srcY,
             int srcWidth,
             int srcHeight,
-            Vector4 color)
+            in Vector4 tint)
         {
             if (texture.Handle != _textureHandle)
                 Flush();
@@ -221,13 +277,13 @@ void main()
 
             var spriteVertColors = new Vector4[]
             {
-                color,
-                color,
-                color,
+                tint,
+                tint,
+                tint,
 
-                color,
-                color,
-                color,
+                tint,
+                tint,
+                tint,
             };
 
             fixed (Vector4* srcPtr = spriteVertColors)
@@ -270,39 +326,24 @@ void main()
             glClear(GL_COLOR_BUFFER_BIT);
 
             AddSprite(
-                ref _glesTexture,
+                _glesTexture,
                 new Vector2(WindowWidth / 2 - _glesTexture.Width / 2, WindowHeight / 2 - _glesTexture.Height / 2),
                 new Vector2(_glesTexture.Width, _glesTexture.Height),
                 0, 0, _glesTexture.Width, _glesTexture.Height,
                 Vector4.One);
 
-            AddSprite(
-                ref _smileyTexture,
-                new Vector2(0, 0),
-                new Vector2(128, 128),
-                0, 0, 128, 128,
-                new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-
-            AddSprite(
-                ref _smileyTexture,
-                new Vector2(128, 0),
-                new Vector2(128, 128),
-                128, 0, 128, 128,
-                new Vector4(0.0f, 1.0f, 0.0f, 1.0f));
-
-            AddSprite(
-                ref _smileyTexture,
-                new Vector2(0, 128),
-                new Vector2(128, 128),
-                0, 128, 128, 128,
-                new Vector4(0.0f, 0.0f, 1.0f, 1.0f));
-
-            AddSprite(
-                ref _smileyTexture,
-                new Vector2(128, 128),
-                new Vector2(128, 128),
-                128, 128, 128, 128,
-                new Vector4(1.0f, 0.0f, 1.0f, 1.0f));
+            for (int i = 0; i < _smileys.Length; i++)
+            {
+                AddSprite(
+                    _smileyTexture,
+                    _smileys[i].Position,
+                    new Vector2(128, 128),
+                    _smileys[i].SrcX,
+                    _smileys[i].SrcY,
+                    _smileys[i].SrcWidth,
+                    _smileys[i].SrcHeight,
+                    _smileys[i].Tint);
+            }
 
             Flush();
         }
