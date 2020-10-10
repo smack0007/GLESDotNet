@@ -191,15 +191,15 @@ void main()
         {
             var io = ImGui.GetIO();
             io.DeltaTime = _elapsed;
-            io.DisplaySize = new Vector2(800, 600);
-            io.DisplayFramebufferScale = Vector2.One;
+            io.DisplaySize = new Vector2(WindowWidth, WindowHeight);
+            io.DisplayFramebufferScale = new Vector2(WindowWidth / FrameBufferWidth, WindowHeight / FrameBufferHeight);
 
             ImGui.NewFrame();
 
             //ImGui.Begin("Hello World!");
             //ImGui.Text("Text");
             //ImGui.End();
-            ImGui.ShowUserGuide();
+            ImGui.ShowDemoWindow();
 
             ImGui.Render();
 
@@ -232,7 +232,8 @@ void main()
                 indexOffset += cmdList.IdxBuffer.Size;
             }
 
-            glViewport(0, 0, WindowWidth, WindowHeight);
+            Title = $"ImGui {FrameBufferWidth}x{FrameBufferHeight}";
+            glViewport(0, 0, FrameBufferWidth, FrameBufferHeight);
             glClear(GL_COLOR_BUFFER_BIT);
 
             glUseProgram(_program);

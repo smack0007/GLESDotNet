@@ -5,13 +5,14 @@ using static GLESDotNet.EGL;
 using static GLESDotNet.GLES2;
 using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace GLESDotNet.Samples
 {
     public abstract class Sample : IDisposable
     {
         private const float TimeBetweenFrames = 1000.0f / 60.0f;
+
+        private string _title;
 
         private IntPtr _window;
         private GLFWwindowsizefun _windowSizeCallback;
@@ -26,11 +27,29 @@ namespace GLESDotNet.Samples
 
         private float _fpsElapsed;
 
+        public string Title
+        {
+            get => _title;
+
+            set
+            {
+                if (value != _title)
+                {
+                    _title = value;
+                    glfwSetWindowTitle(_window, _title);
+                }
+            }
+        }
+
         public int WindowWidth { get; private set; }
 
         public int WindowHeight { get; private set; }
 
         public int FramesPerSecond { get; private set; }
+
+        public int FrameBufferWidth { get; private set; }
+
+        public int FrameBufferHeight { get; private set; }
 
         public Sample(string title, int windowWidth = 800, int windowHeight = 600)
         {
@@ -42,7 +61,8 @@ namespace GLESDotNet.Samples
 
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-            _window = glfwCreateWindow(windowWidth, windowHeight, title, IntPtr.Zero, IntPtr.Zero);
+            _title = title;
+            _window = glfwCreateWindow(windowWidth, windowHeight, _title, IntPtr.Zero, IntPtr.Zero);
 
             if (_window == IntPtr.Zero)
                 throw new InvalidOperationException("Failed to create window.");
@@ -196,6 +216,10 @@ namespace GLESDotNet.Samples
 
         private void Tick()
         {
+            glfwGetFramebufferSize(_window, out var frameBufferWidth, out  var frameBufferHeight);
+            FrameBufferWidth = frameBufferWidth;
+            FrameBufferHeight = frameBufferHeight;
+
             float currentElapsed = (float)_stopwatch.Elapsed.TotalMilliseconds;
             float deltaElapsed = currentElapsed - _lastElapsed;
             _elapsedSinceLastFrame += deltaElapsed;
