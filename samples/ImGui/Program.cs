@@ -150,6 +150,7 @@ void main()
             ImGui.SetCurrentContext(context);
             ImGui.StyleColorsDark();
             var io = ImGui.GetIO();
+            io.Fonts.AddFontDefault();
 
             io.Fonts.GetTexDataAsRGBA32(out byte* pixelData, out int width, out int height, out int bytesPerPixel);
 
@@ -165,6 +166,7 @@ void main()
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)GL_LINEAR);
 
             io.Fonts.SetTexID((IntPtr)_texture);
+            io.Fonts.ClearTexData();
 
             glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
 
@@ -198,7 +200,7 @@ void main()
             // ImGui.SetNextWindowPos(new Vector2(10, 10));
             ImGui.SetNextWindowSize(new Vector2(600, 600));
             ImGui.Begin("Hello World");
-            ImGui.Text("This is some text");
+            ImGui.Text("This is some text...");
             ImGui.End();
 
             //ImGui.ShowDemoWindow();
@@ -285,7 +287,7 @@ void main()
                         (int)(drawCmd.ClipRect.Z - drawCmd.ClipRect.X),
                         (int)(drawCmd.ClipRect.W - drawCmd.ClipRect.Y));
 
-                    fixed (ushort* indexDataPtr = _indexData)
+                    fixed (ushort* indexDataPtr = &_indexData[drawCmd.IdxOffset])
                     {
                         glDrawElements(
                             GL_TRIANGLES,
