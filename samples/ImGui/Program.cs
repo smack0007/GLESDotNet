@@ -30,7 +30,7 @@ namespace ImGuiGLESDotNet
         }
 
         public ImGuiSample()
-            : base("ImGui")
+            : base("ImGui", 1280, 720)
         {
         }
 
@@ -103,7 +103,7 @@ uniform mat4 vertProjection;
 
 void main()
 {
-    gl_Position = vertProjection * vec4(vertPosition, 0, 1);
+    gl_Position = vertProjection * vec4(vertPosition.xy, 0, 1);
     fragTexCoord = vertTexCoord;
     fragColor = vertColor;
 }";
@@ -148,6 +148,7 @@ void main()
 
             var context = ImGui.CreateContext();
             ImGui.SetCurrentContext(context);
+            ImGui.StyleColorsDark();
             var io = ImGui.GetIO();
 
             io.Fonts.GetTexDataAsRGBA32(out byte* pixelData, out int width, out int height, out int bytesPerPixel);
@@ -164,9 +165,8 @@ void main()
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)GL_LINEAR);
 
             io.Fonts.SetTexID((IntPtr)_texture);
-            io.Fonts.ClearTexData();
 
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
 
             glEnableVertexAttribArray(0);
             glEnableVertexAttribArray(1);
@@ -177,7 +177,6 @@ void main()
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glDisable(GL_CULL_FACE);
             glDisable(GL_DEPTH_TEST);
-            glEnable(GL_SCISSOR_TEST);
         }
 
         private float _elapsed;
@@ -192,14 +191,17 @@ void main()
             var io = ImGui.GetIO();
             io.DeltaTime = _elapsed;
             io.DisplaySize = new Vector2(WindowWidth, WindowHeight);
-            io.DisplayFramebufferScale = new Vector2(WindowWidth / FrameBufferWidth, WindowHeight / FrameBufferHeight);
+            io.DisplayFramebufferScale = Vector2.One;
 
             ImGui.NewFrame();
 
-            //ImGui.Begin("Hello World!");
-            //ImGui.Text("Text");
-            //ImGui.End();
-            ImGui.ShowDemoWindow();
+            // ImGui.SetNextWindowPos(new Vector2(10, 10));
+            ImGui.SetNextWindowSize(new Vector2(600, 600));
+            ImGui.Begin("Hello World");
+            ImGui.Text("This is some text");
+            ImGui.End();
+
+            //ImGui.ShowDemoWindow();
 
             ImGui.Render();
 
@@ -232,9 +234,11 @@ void main()
                 indexOffset += cmdList.IdxBuffer.Size;
             }
 
-            Title = $"ImGui {FrameBufferWidth}x{FrameBufferHeight}";
-            glViewport(0, 0, FrameBufferWidth, FrameBufferHeight);
+            glViewport(0, 0, WindowWidth, WindowHeight);
+
+            glDisable(GL_SCISSOR_TEST);
             glClear(GL_COLOR_BUFFER_BIT);
+            glEnable(GL_SCISSOR_TEST);
 
             glUseProgram(_program);
 
@@ -274,6 +278,12 @@ void main()
                     {
                         glUniformMatrix4fv(_vertProjectionLocation, 1, false, projectionPtr);
                     }
+
+                    glScissor(
+                        (int)drawCmd.ClipRect.X,
+                        WindowHeight - (int)drawCmd.ClipRect.W,
+                        (int)(drawCmd.ClipRect.Z - drawCmd.ClipRect.X),
+                        (int)(drawCmd.ClipRect.W - drawCmd.ClipRect.Y));
 
                     fixed (ushort* indexDataPtr = _indexData)
                     {
