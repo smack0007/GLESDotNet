@@ -1,5 +1,6 @@
 ﻿using System;
 using static GLESDotNet.GLES2;
+using static GLFWDotNet.GLFW;
 using System.Text;
 using GLESDotNet.Samples;
 using ImageDotNet;
@@ -22,6 +23,8 @@ namespace ImGuiGLESDotNet
         private float[] _vertexData = new float[1024 * 1024];
         private ushort[] _indexData = new ushort[1024 * 1024];
 
+        private Vector2 _mousePosition = Vector2.Zero;
+        private bool[] _mouseButtons = new bool[GLFW_MOUSE_BUTTON_LAST];
 
         public static void Main(string[] args)
         {
@@ -188,6 +191,19 @@ void main()
             _elapsed = elapsed;
         }
 
+        protected override void OnMouseMove(double xpos, double ypos)
+        {
+            base.OnMouseMove(xpos, ypos);
+            _mousePosition.X = (float)xpos;
+            _mousePosition.Y = (float)ypos;
+        }
+
+        protected override void OnMouseButton(int button, int action, int mods)
+        {
+            base.OnMouseButton(button, action, mods);
+            _mouseButtons[button] = action != GLFW_RELEASE;
+        }
+
         protected override void Draw()
         {
             var io = ImGui.GetIO();
@@ -195,6 +211,11 @@ void main()
             io.DisplaySize = new Vector2(WindowWidth, WindowHeight);
             io.DisplayFramebufferScale = Vector2.One;
 
+            io.MousePos = new Vector2(_mousePosition.X, _mousePosition.Y);
+
+            for (int i = 0; i < io.MouseDown.Count; i++)
+                io.MouseDown[i] = _mouseButtons[i];
+            
             ImGui.NewFrame();
 
             // ImGui.SetNextWindowPos(new Vector2(10, 10));

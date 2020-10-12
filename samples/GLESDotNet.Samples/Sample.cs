@@ -17,6 +17,8 @@ namespace GLESDotNet.Samples
         private IntPtr _window;
         private GLFWwindowsizefun _windowSizeCallback;
         private GLFWkeyfun _keyboardCallback;
+        private GLFWcursorposfun _mouseMoveCallback;
+        private GLFWmousebuttonfun _mouseButtonCallback;
 
         private IntPtr _display;
         private IntPtr _surface;
@@ -70,11 +72,17 @@ namespace GLESDotNet.Samples
             WindowWidth = windowWidth;
             WindowHeight = windowHeight;
 
-            _windowSizeCallback = OnWindowSize;
+            _windowSizeCallback = (_, width, height) => OnWindowSize(width, height);
             glfwSetWindowSizeCallback(_window, _windowSizeCallback);
 
-            _keyboardCallback = OnKeyboard;
+            _keyboardCallback = (_, key, scancode, action, mode) => OnKeyboard(key, scancode, action, mode);
             glfwSetKeyCallback(_window, _keyboardCallback);
+
+            _mouseMoveCallback = (_, xpos, ypos) => OnMouseMove(xpos, ypos);
+            glfwSetCursorPosCallback(_window, _mouseMoveCallback);
+
+            _mouseButtonCallback = (_, button, action, mods) => OnMouseButton(button, action, mods);
+            glfwSetMouseButtonCallback(_window, _mouseButtonCallback);
 
             CreateContext();
         }
@@ -90,16 +98,24 @@ namespace GLESDotNet.Samples
             GC.SuppressFinalize(this);
         }
 
-        protected virtual void OnWindowSize(IntPtr window, int width, int height)
+        protected virtual void OnWindowSize(int width, int height)
         {
             WindowWidth = width;
             WindowHeight = height;
         }
 
-        protected virtual void OnKeyboard(IntPtr window, int key, int scancode, int action, int mods)
+        protected virtual void OnKeyboard(int key, int scancode, int action, int mods)
         {
             if (key == GLFW_KEY_ESCAPE)
                 glfwSetWindowShouldClose(_window, 1);
+        }
+
+        protected virtual void OnMouseMove(double xpos, double ypos)
+        {
+        }
+
+        protected virtual void OnMouseButton(int button, int action, int mods)
+        {
         }
 
         private IntPtr GetNativeWindowHandle()
