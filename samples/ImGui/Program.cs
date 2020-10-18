@@ -7,6 +7,7 @@ using ImageDotNet;
 using ImGuiNET;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace ImGuiGLESDotNet
 {
@@ -23,8 +24,35 @@ namespace ImGuiGLESDotNet
         private float[] _vertexData = new float[1024 * 1024];
         private ushort[] _indexData = new ushort[1024 * 1024];
 
+        private Dictionary<int, bool> _keyStates = new Dictionary<int, bool>()
+        {
+            [GLFW_KEY_TAB] = false,
+            [GLFW_KEY_LEFT] = false,
+            [GLFW_KEY_RIGHT] = false,
+            [GLFW_KEY_UP] = false,
+            [GLFW_KEY_DOWN] = false,
+            [GLFW_KEY_PAGE_UP] = false,
+            [GLFW_KEY_PAGE_DOWN] = false,
+            [GLFW_KEY_HOME] = false,
+            [GLFW_KEY_END] = false,
+            [GLFW_KEY_DELETE] = false,
+            [GLFW_KEY_BACKSPACE] = false,
+            [GLFW_KEY_ENTER] = false,
+            [GLFW_KEY_ESCAPE] = false,
+
+            [GLFW_KEY_LEFT_ALT] = false,
+            [GLFW_KEY_RIGHT_ALT] = false,
+
+            [GLFW_KEY_LEFT_CONTROL] = false,
+            [GLFW_KEY_RIGHT_CONTROL] = false,
+
+            [GLFW_KEY_LEFT_SHIFT] = false,
+            [GLFW_KEY_RIGHT_SHIFT] = false,
+        };
         private Vector2 _mousePosition = Vector2.Zero;
         private bool[] _mouseButtons = new bool[GLFW_MOUSE_BUTTON_LAST];
+
+        private byte[] _name = new byte[128];
 
         public static void Main(string[] args)
         {
@@ -171,6 +199,8 @@ void main()
             io.Fonts.SetTexID((IntPtr)_texture);
             io.Fonts.ClearTexData();
 
+            SetKeyMap();
+
             glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
 
             glEnableVertexAttribArray(0);
@@ -184,11 +214,46 @@ void main()
             glDisable(GL_DEPTH_TEST);
         }
 
+        private void SetKeyMap()
+        {
+            var io = ImGui.GetIO();
+
+            io.KeyMap[(int)ImGuiKey.Tab] = GLFW_KEY_TAB;
+            io.KeyMap[(int)ImGuiKey.LeftArrow] = GLFW_KEY_LEFT;
+            io.KeyMap[(int)ImGuiKey.RightArrow] = GLFW_KEY_RIGHT;
+            io.KeyMap[(int)ImGuiKey.UpArrow] = GLFW_KEY_UP;
+            io.KeyMap[(int)ImGuiKey.DownArrow] = GLFW_KEY_DOWN;
+            io.KeyMap[(int)ImGuiKey.PageUp] = GLFW_KEY_PAGE_UP;
+            io.KeyMap[(int)ImGuiKey.PageDown] = GLFW_KEY_PAGE_DOWN;
+            io.KeyMap[(int)ImGuiKey.Home] = GLFW_KEY_HOME;
+            io.KeyMap[(int)ImGuiKey.End] = GLFW_KEY_END;
+            io.KeyMap[(int)ImGuiKey.Delete] = GLFW_KEY_DELETE;
+            io.KeyMap[(int)ImGuiKey.Backspace] = GLFW_KEY_BACKSPACE;
+            io.KeyMap[(int)ImGuiKey.Enter] = GLFW_KEY_ENTER;
+            io.KeyMap[(int)ImGuiKey.Escape] = GLFW_KEY_ESCAPE;
+        }
+
         private float _elapsed;
 
         protected override void Update(float elapsed)
         {
             _elapsed = elapsed;
+        }
+
+        protected override void OnKeyboard(int key, int scancode, int action, int mods)
+        {
+            base.OnKeyboard(key, scancode, action, mods);
+
+            var io = ImGui.GetIO();
+
+            if (_keyStates.ContainsKey(key))
+            {
+                _keyStates[key] = action == GLFW_PRESS;
+            }
+            else if (action == GLFW_PRESS)
+            {
+                io.AddInputCharacter((uint)key);
+            }
         }
 
         protected override void OnMouseMove(double xpos, double ypos)
@@ -211,17 +276,15 @@ void main()
             io.DisplaySize = new Vector2(WindowWidth, WindowHeight);
             io.DisplayFramebufferScale = Vector2.One;
 
-            io.MousePos = new Vector2(_mousePosition.X, _mousePosition.Y);
+            UpdateInput(io);
 
-            for (int i = 0; i < io.MouseDown.Count; i++)
-                io.MouseDown[i] = _mouseButtons[i];
-            
             ImGui.NewFrame();
 
             // ImGui.SetNextWindowPos(new Vector2(10, 10));
             ImGui.SetNextWindowSize(new Vector2(600, 600));
             ImGui.Begin("Hello World");
             ImGui.Text("This is some text...");
+            ImGui.InputText("Name", _name, (uint)_name.Length);
             ImGui.End();
 
             //ImGui.ShowDemoWindow();
@@ -318,6 +381,21 @@ void main()
                     }
                 }
             }
+        }
+
+        private void UpdateInput(ImGuiIOPtr io)
+        {
+            foreach (var key in _keyStates.Keys)
+                io.KeysDown[key] = _keyStates[key];
+
+            io.KeyAlt = _keyStates[GLFW_KEY_LEFT_ALT] || _keyStates[GLFW_KEY_RIGHT_ALT];
+            io.KeyCtrl = _keyStates[GLFW_KEY_LEFT_CONTROL] || _keyStates[GLFW_KEY_RIGHT_CONTROL];
+            io.KeyShift = _keyStates[GLFW_KEY_LEFT_SHIFT] || _keyStates[GLFW_KEY_RIGHT_SHIFT];
+
+            io.MousePos = new Vector2(_mousePosition.X, _mousePosition.Y);
+
+            for (int i = 0; i < io.MouseDown.Count; i++)
+                io.MouseDown[i] = _mouseButtons[i];
         }
     }
 }
