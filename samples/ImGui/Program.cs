@@ -19,10 +19,9 @@ namespace ImGuiGLESDotNet
         private uint _texture;
 
         private const int VertexSizeInBytes = 20;
-        private const int VertexSizeInFloats = VertexSizeInBytes / sizeof(float);
 
-        private float[] _vertexData = new float[1024 * 1024];
-        private ushort[] _indexData = new ushort[1024 * 1024];
+        private byte[] _vertexData = new byte[1024 * 1024];
+        private byte[] _indexData = new byte[1024 * 1024];
 
         private Dictionary<int, bool> _keyStates = new Dictionary<int, bool>()
         {
@@ -283,14 +282,14 @@ void main()
 
             ImGui.NewFrame();
 
+            ImGui.ShowDemoWindow();
+
             // ImGui.SetNextWindowPos(new Vector2(10, 10));
             //ImGui.SetNextWindowSize(new Vector2(600, 600));
             //ImGui.Begin("Hello World");
             //ImGui.Text("This is some text...");
             //ImGui.InputText("Name", _name, (uint)_name.Length);
             //ImGui.End();
-
-            ImGui.ShowDemoWindow();
 
             ImGui.Render();
 
@@ -303,19 +302,19 @@ void main()
             {
                 ImDrawListPtr cmdList = drawData.CmdListsRange[n];
 
-                fixed (void* vertexDataPtr = &_vertexData[vertexOffset * VertexSizeInFloats])
+                fixed (void* vertexDataPtr = &_vertexData[vertexOffset * VertexSizeInBytes])
                 fixed (void* indexDataPtr = &_indexData[indexOffset * sizeof(ushort)])
                 {
                     Buffer.MemoryCopy(
                         (void*)cmdList.VtxBuffer.Data,
                         vertexDataPtr,
-                        _vertexData.Length * sizeof(float),
-                        cmdList.VtxBuffer.Size * VertexSizeInFloats * sizeof(float));
+                        _vertexData.Length,
+                        cmdList.VtxBuffer.Size * VertexSizeInBytes);
 
                     Buffer.MemoryCopy(
                         (void*)cmdList.IdxBuffer.Data,
                         indexDataPtr,
-                        _indexData.Length * sizeof(ushort),
+                        _indexData.Length,
                         cmdList.IdxBuffer.Size * sizeof(ushort));
                 }
 
@@ -331,11 +330,11 @@ void main()
 
             glUseProgram(_program);
 
-            fixed (float* vertexDataPtr = _vertexData)
+            fixed (byte* vertexDataPtr = _vertexData)
             {
-                glVertexAttribPointer(0, 2, GL_FLOAT, false, VertexSizeInBytes, (byte*)vertexDataPtr);
-                glVertexAttribPointer(1, 2, GL_FLOAT, false, VertexSizeInBytes, (byte*)vertexDataPtr + 8);
-                glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, true, VertexSizeInBytes, (byte*)vertexDataPtr + 16);
+                glVertexAttribPointer(0, 2, GL_FLOAT, false, VertexSizeInBytes, vertexDataPtr);
+                glVertexAttribPointer(1, 2, GL_FLOAT, false, VertexSizeInBytes, vertexDataPtr + 8);
+                glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, true, VertexSizeInBytes, vertexDataPtr + 16);
             }
 
             glActiveTexture(GL_TEXTURE0);
@@ -374,7 +373,7 @@ void main()
                         (int)(drawCmd.ClipRect.Z - drawCmd.ClipRect.X),
                         (int)(drawCmd.ClipRect.W - drawCmd.ClipRect.Y));
 
-                    fixed (ushort* indexDataPtr = &_indexData[drawCmd.IdxOffset])
+                    fixed (byte* indexDataPtr = &_indexData[drawCmd.IdxOffset * sizeof(ushort)])
                     {
                         glDrawElements(
                             GL_TRIANGLES,
