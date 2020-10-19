@@ -17,6 +17,7 @@ namespace GLESDotNet.Samples
         private IntPtr _window;
         private GLFWwindowsizefun _windowSizeCallback;
         private GLFWkeyfun _keyboardCallback;
+        private GLFWcharfun _textCallback;
         private GLFWcursorposfun _mouseMoveCallback;
         private GLFWmousebuttonfun _mouseButtonCallback;
 
@@ -78,6 +79,9 @@ namespace GLESDotNet.Samples
             _keyboardCallback = (_, key, scancode, action, mode) => OnKeyboard(key, scancode, action, mode);
             glfwSetKeyCallback(_window, _keyboardCallback);
 
+            _textCallback = (_, codepoint) => OnText(codepoint);
+            glfwSetCharCallback(_window, _textCallback);
+
             _mouseMoveCallback = (_, xpos, ypos) => OnMouseMove(xpos, ypos);
             glfwSetCursorPosCallback(_window, _mouseMoveCallback);
 
@@ -108,6 +112,10 @@ namespace GLESDotNet.Samples
         {
             if (key == GLFW_KEY_ESCAPE)
                 glfwSetWindowShouldClose(_window, 1);
+        }
+
+        protected virtual void OnText(uint codepoint)
+        {
         }
 
         protected virtual void OnMouseMove(double xpos, double ypos)

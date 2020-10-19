@@ -48,6 +48,9 @@ namespace ImGuiGLESDotNet
 
             [GLFW_KEY_LEFT_SHIFT] = false,
             [GLFW_KEY_RIGHT_SHIFT] = false,
+
+            [GLFW_KEY_LEFT_SUPER] = false,
+            [GLFW_KEY_RIGHT_SUPER] = false,
         };
         private Vector2 _mousePosition = Vector2.Zero;
         private bool[] _mouseButtons = new bool[GLFW_MOUSE_BUTTON_LAST];
@@ -244,16 +247,16 @@ void main()
         {
             base.OnKeyboard(key, scancode, action, mods);
 
-            var io = ImGui.GetIO();
-
             if (_keyStates.ContainsKey(key))
-            {
-                _keyStates[key] = action == GLFW_PRESS;
-            }
-            else if (action == GLFW_PRESS)
-            {
-                io.AddInputCharacter((uint)key);
-            }
+                _keyStates[key] = action != GLFW_RELEASE;
+        }
+
+        protected override void OnText(uint codepoint)
+        {
+            base.OnText(codepoint);
+
+            var io = ImGui.GetIO();
+            io.AddInputCharacter(codepoint);
         }
 
         protected override void OnMouseMove(double xpos, double ypos)
@@ -272,7 +275,7 @@ void main()
         protected override void Draw()
         {
             var io = ImGui.GetIO();
-            io.DeltaTime = _elapsed;
+            io.DeltaTime = _elapsed / 1000.0f;
             io.DisplaySize = new Vector2(WindowWidth, WindowHeight);
             io.DisplayFramebufferScale = Vector2.One;
 
@@ -281,13 +284,13 @@ void main()
             ImGui.NewFrame();
 
             // ImGui.SetNextWindowPos(new Vector2(10, 10));
-            ImGui.SetNextWindowSize(new Vector2(600, 600));
-            ImGui.Begin("Hello World");
-            ImGui.Text("This is some text...");
-            ImGui.InputText("Name", _name, (uint)_name.Length);
-            ImGui.End();
+            //ImGui.SetNextWindowSize(new Vector2(600, 600));
+            //ImGui.Begin("Hello World");
+            //ImGui.Text("This is some text...");
+            //ImGui.InputText("Name", _name, (uint)_name.Length);
+            //ImGui.End();
 
-            //ImGui.ShowDemoWindow();
+            ImGui.ShowDemoWindow();
 
             ImGui.Render();
 
@@ -391,6 +394,7 @@ void main()
             io.KeyAlt = _keyStates[GLFW_KEY_LEFT_ALT] || _keyStates[GLFW_KEY_RIGHT_ALT];
             io.KeyCtrl = _keyStates[GLFW_KEY_LEFT_CONTROL] || _keyStates[GLFW_KEY_RIGHT_CONTROL];
             io.KeyShift = _keyStates[GLFW_KEY_LEFT_SHIFT] || _keyStates[GLFW_KEY_RIGHT_SHIFT];
+            io.KeySuper = _keyStates[GLFW_KEY_LEFT_SUPER] || _keyStates[GLFW_KEY_RIGHT_SUPER];
 
             io.MousePos = new Vector2(_mousePosition.X, _mousePosition.Y);
 
