@@ -1450,6 +1450,14 @@ namespace GLESDotNet
 			_glGenBuffers(n, buffers);
 		}
 
+		public static void glGenBuffers(int n, ref uint buffers)
+		{
+			fixed (uint* buffersPtr = &buffers)
+			{
+				_glGenBuffers(n, buffersPtr);
+			}
+		}
+
 		public static void glGenerateMipmap(uint target)
 		{
 			_glGenerateMipmap(target);
@@ -1460,14 +1468,38 @@ namespace GLESDotNet
 			_glGenFramebuffers(n, framebuffers);
 		}
 
+		public static void glGenFramebuffers(int n, ref uint framebuffers)
+		{
+			fixed (uint* framebuffersPtr = &framebuffers)
+			{
+				_glGenFramebuffers(n, framebuffersPtr);
+			}
+		}
+
 		public static void glGenRenderbuffers(int n, uint* renderbuffers)
 		{
 			_glGenRenderbuffers(n, renderbuffers);
 		}
 
+		public static void glGenRenderbuffers(int n, ref uint renderbuffers)
+		{
+			fixed (uint* renderbuffersPtr = &renderbuffers)
+			{
+				_glGenRenderbuffers(n, renderbuffersPtr);
+			}
+		}
+
 		public static void glGenTextures(int n, uint* textures)
 		{
 			_glGenTextures(n, textures);
+		}
+
+		public static void glGenTextures(int n, ref uint textures)
+		{
+			fixed (uint* texturesPtr = &textures)
+			{
+				_glGenTextures(n, texturesPtr);
+			}
 		}
 
 		public static void glGetActiveAttrib(uint program, uint index, int bufSize, int* length, int* size, uint* type, StringBuilder name)

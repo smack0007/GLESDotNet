@@ -43,6 +43,8 @@ namespace GLGenerator
 
             public List<FunctionParamData> Params { get; } = new List<FunctionParamData>();
 
+            public bool GenerateByRefOverload => Params.Any(x => x.UseForByRefOverload);
+
             public FunctionData() { }
 
             public FunctionData(FunctionData functionData)
@@ -75,8 +77,6 @@ namespace GLGenerator
 
             public string Name { get; set; } = "";
 
-            public bool UseForVoidPointerOverload { get; set; }
-
             public bool UseForByRefOverload { get; set; }
 
             public FunctionParamData() { }
@@ -92,13 +92,6 @@ namespace GLGenerator
             }
 
             public override string ToString() => $"{Type}: {Name}";
-
-            public void OverrideType(string type, string? typePrefix = null)
-            {
-                TypePrefix = typePrefix;
-                Type = type;
-                TypeOverridden = true;
-            }
         }
 
         static void Main(string[] args)
@@ -127,20 +120,27 @@ namespace GLGenerator
             //glTexImage3D.Params.Single(x => x.Name == "pixels").UseForVoidPointerOverload = true;
 
             foreach (var function in functions.Where(x =>
-                x.Name.StartsWith("glGet") &&
-                x.Name.EndsWith("v") &&
-                x.Params.Any(y => y.Name == "data")))
+                x.Name.StartsWith("glGen") &&
+                x.Params.Last().Type == "GLuint*"))
             {
-                function.Params.Single(x => x.Name == "data").UseForByRefOverload = true;
+                function.Params.Last().UseForByRefOverload = true;
             }
 
-            foreach (var function in functions.Where(x =>
-                (x.Name.StartsWith("glUniform") || x.Name.StartsWith("glProgramUniform")) &&
-                x.Name.EndsWith("v") &&
-                x.Params.Any(y => y.Name == "value")))
-            {
-                function.Params.Single(x => x.Name == "value").UseForByRefOverload = true;
-            }
+            //foreach (var function in functions.Where(x =>
+            //    x.Name.StartsWith("glGet") &&
+            //    x.Name.EndsWith("v") &&
+            //    x.Params.Any(y => y.Name == "data")))
+            //{
+            //    function.Params.Single(x => x.Name == "data").UseForByRefOverload = true;
+            //}
+
+            //foreach (var function in functions.Where(x =>
+            //    (x.Name.StartsWith("glUniform") || x.Name.StartsWith("glProgramUniform")) &&
+            //    x.Name.EndsWith("v") &&
+            //    x.Params.Any(y => y.Name == "value")))
+            //{
+            //    function.Params.Single(x => x.Name == "value").UseForByRefOverload = true;
+            //}
 
             Write(
                 @"..\..\..\..\src\GLESDotNet\GLES2.cs",
@@ -413,6 +413,33 @@ namespace GLGenerator
                 }
 
                 sb.AppendLine();
+
+                if (function.GenerateByRefOverload)
+                {
+                    string returnType = GetReturnType(function.ReturnType);
+                    string parameters = string.Join(", ", function.Params.Select(x => (x.UseForByRefOverload ? "ref " : "") + GetParamType(x, isRefOverload: x.UseForByRefOverload) + " " + GetParamName(x.Name)));
+                    string parameterNames = string.Join(", ", function.Params.Select(x => GetParamName(x.Name) + (x.UseForByRefOverload ? "Ptr" : "")));
+
+                    sb.AppendLine($"\t\tpublic static {returnType} {function.Name}({parameters})");
+                    sb.AppendLine("\t\t{");
+
+                    foreach (var param in function.Params.Where(x => x.UseForByRefOverload))
+                        sb.AppendLine($"\t\t\tfixed ({GetParamType(param)} {GetParamName(param.Name)}Ptr = &{GetParamName(param.Name)})");
+                    
+                    sb.AppendLine("\t\t\t{");
+                    sb.Append("\t\t\t\t");
+
+                    if (returnType != "void")
+                        sb.Append("return ");
+
+                    sb.AppendLine($"_{function.Name}({parameterNames});");
+
+                    sb.AppendLine("\t\t\t}");
+
+                    sb.AppendLine("\t\t}");
+
+                    sb.AppendLine();
+                }
             }
 
             sb.AppendLine("\t}");
@@ -465,7 +492,7 @@ namespace GLGenerator
             return returnType;
         }
 
-        private static string GetParamType(FunctionParamData param)
+        private static string GetParamType(FunctionParamData param, bool isRefOverload = false)
         {
             string type = param.Type;
 
@@ -635,6 +662,9 @@ namespace GLGenerator
                         break;
                 }
             }
+
+            if (isRefOverload)
+                type = type.TrimEnd('*');
 
             return type;
         }
