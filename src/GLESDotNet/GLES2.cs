@@ -1285,6 +1285,21 @@ namespace GLESDotNet
 			}
 		}
 
+		public static void glBufferData<T>(uint target, int size, ref T data, uint usage)
+			where T: struct
+		{
+			var dataPtr = GCHandle.Alloc(data, GCHandleType.Pinned);
+
+			try
+			{
+				_glBufferData(target, size, (void*)dataPtr.AddrOfPinnedObject(), usage);
+			}
+			finally
+			{
+				dataPtr.Free();
+			}
+		}
+
 		public static void glBufferSubData(uint target, int offset, int size, void* data)
 		{
 			_glBufferSubData(target, offset, size, data);
@@ -1296,6 +1311,21 @@ namespace GLESDotNet
 		}
 
 		public static void glBufferSubData<T>(uint target, int offset, int size, T[] data)
+			where T: struct
+		{
+			var dataPtr = GCHandle.Alloc(data, GCHandleType.Pinned);
+
+			try
+			{
+				_glBufferSubData(target, offset, size, (void*)dataPtr.AddrOfPinnedObject());
+			}
+			finally
+			{
+				dataPtr.Free();
+			}
+		}
+
+		public static void glBufferSubData<T>(uint target, int offset, int size, ref T data)
 			where T: struct
 		{
 			var dataPtr = GCHandle.Alloc(data, GCHandleType.Pinned);
@@ -1463,6 +1493,36 @@ namespace GLESDotNet
 		public static void glDrawElements(uint mode, int count, uint type, IntPtr indices)
 		{
 			_glDrawElements(mode, count, type, (void*)indices);
+		}
+
+		public static void glDrawElements<T>(uint mode, int count, uint type, T[] indices)
+			where T: struct
+		{
+			var indicesPtr = GCHandle.Alloc(indices, GCHandleType.Pinned);
+
+			try
+			{
+				_glDrawElements(mode, count, type, (void*)indicesPtr.AddrOfPinnedObject());
+			}
+			finally
+			{
+				indicesPtr.Free();
+			}
+		}
+
+		public static void glDrawElements<T>(uint mode, int count, uint type, ref T indices)
+			where T: struct
+		{
+			var indicesPtr = GCHandle.Alloc(indices, GCHandleType.Pinned);
+
+			try
+			{
+				_glDrawElements(mode, count, type, (void*)indicesPtr.AddrOfPinnedObject());
+			}
+			finally
+			{
+				indicesPtr.Free();
+			}
 		}
 
 		public static void glEnable(uint cap)
@@ -1857,6 +1917,21 @@ namespace GLESDotNet
 		}
 
 		public static void glTexImage2D<T>(uint target, int level, int internalformat, int width, int height, int border, uint format, uint type, T[] pixels)
+			where T: struct
+		{
+			var pixelsPtr = GCHandle.Alloc(pixels, GCHandleType.Pinned);
+
+			try
+			{
+				_glTexImage2D(target, level, internalformat, width, height, border, format, type, (void*)pixelsPtr.AddrOfPinnedObject());
+			}
+			finally
+			{
+				pixelsPtr.Free();
+			}
+		}
+
+		public static void glTexImage2D<T>(uint target, int level, int internalformat, int width, int height, int border, uint format, uint type, ref T pixels)
 			where T: struct
 		{
 			var pixelsPtr = GCHandle.Alloc(pixels, GCHandleType.Pinned);

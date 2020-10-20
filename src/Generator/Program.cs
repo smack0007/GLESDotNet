@@ -116,6 +116,9 @@ namespace GLGenerator
             var glBufferSubData = functions.Single(x => x.Name == "glBufferSubData");
             glBufferSubData.Params.Single(x => x.Name == "data").UseForGenericOverload = true;
 
+            var glDrawElements = functions.Single(x => x.Name == "glDrawElements");
+            glDrawElements.Params.Single(x => x.Name == "indices").UseForGenericOverload = true;
+
             var glTexImage2D = functions.Single(x => x.Name == "glTexImage2D");
             glTexImage2D.Params.Single(x => x.Name == "pixels").UseForGenericOverload = true;
 
@@ -427,7 +430,41 @@ namespace GLGenerator
 
                 if (function.GenerateGenericOverload)
                 {
+                    // T[]
                     parameters = string.Join(", ", function.Params.Select(x => (x.UseForGenericOverload ? "T[]" : GetParamType(x)) + " " + GetParamName(x.Name)));
+                    parameterNames = string.Join(", ", function.Params.Select(x => (x.UseForGenericOverload ? "(void*)" : "") + GetParamName(x.Name) + (x.UseForGenericOverload ? "Ptr.AddrOfPinnedObject()" : "")));
+
+                    sb.AppendLine($"\t\tpublic static {returnType} {function.Name}<T>({parameters})");
+                    sb.AppendLine("\t\t\twhere T: struct");
+                    sb.AppendLine("\t\t{");
+
+                    foreach (var param in function.Params.Where(x => x.UseForGenericOverload))
+                        sb.AppendLine($"\t\t\tvar {GetParamName(param.Name)}Ptr = GCHandle.Alloc({GetParamName(param.Name)}, GCHandleType.Pinned);");
+
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\ttry");
+                    sb.AppendLine("\t\t\t{");
+                    sb.Append("\t\t\t\t");
+
+                    if (returnType != "void")
+                        sb.Append("return ");
+
+                    sb.AppendLine($"_{function.Name}({parameterNames});");
+
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine("\t\t\tfinally");
+                    sb.AppendLine("\t\t\t{");
+
+                    foreach (var param in function.Params.Where(x => x.UseForGenericOverload))
+                        sb.AppendLine($"\t\t\t\t{GetParamName(param.Name)}Ptr.Free();");
+
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine("\t\t}");
+
+                    sb.AppendLine();
+
+                    // ref T
+                    parameters = string.Join(", ", function.Params.Select(x => (x.UseForGenericOverload ? "ref T" : GetParamType(x)) + " " + GetParamName(x.Name)));
                     parameterNames = string.Join(", ", function.Params.Select(x => (x.UseForGenericOverload ? "(void*)" : "") + GetParamName(x.Name) + (x.UseForGenericOverload ? "Ptr.AddrOfPinnedObject()" : "")));
 
                     sb.AppendLine($"\t\tpublic static {returnType} {function.Name}<T>({parameters})");
