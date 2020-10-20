@@ -490,6 +490,16 @@ namespace GLESDotNet
 			return _eglChooseConfig(dpy, attrib_list, configs, config_size, num_config);
 		}
 
+        public static bool eglChooseConfig(IntPtr dpy, int[] attrib_list, out IntPtr configs, int config_size, out int num_config)
+        {
+            fixed (int* attrib_listPtr = attrib_list)
+            fixed (IntPtr* configsPtr = &configs)
+            fixed (int* num_configPtr = &num_config)
+            {
+                return _eglChooseConfig(dpy, attrib_listPtr, configsPtr, config_size, num_configPtr);
+            }
+        }
+
 		public static int eglClientWaitSync(IntPtr dpy, IntPtr sync, int flags, ulong timeout)
 		{
 			return _eglClientWaitSync(dpy, sync, flags, timeout);
@@ -504,6 +514,14 @@ namespace GLESDotNet
 		{
 			return _eglCreateContext(dpy, config, share_context, attrib_list);
 		}
+
+        public static IntPtr eglCreateContext(IntPtr dpy, IntPtr config, IntPtr share_context, int[] attrib_list)
+        {
+            fixed (int* attrib_listPtr = attrib_list)
+            {
+                return _eglCreateContext(dpy, config, share_context, attrib_listPtr);
+            }
+        }
 
 		public static IntPtr eglCreateImage(IntPtr dpy, IntPtr ctx, int target, IntPtr buffer, IntPtr* attrib_list)
 		{
@@ -554,6 +572,19 @@ namespace GLESDotNet
 		{
 			return _eglCreateWindowSurface(dpy, config, win, attrib_list);
 		}
+
+        public static IntPtr eglCreateWindowSurface(IntPtr dpy, IntPtr config, IntPtr win, int[] attrib_list)
+        {
+            fixed (int* attrib_listPtr = attrib_list)
+            {
+                return _eglCreateWindowSurface(dpy, config, win, attrib_listPtr);
+            }
+        }
+
+        public static IntPtr eglCreateWindowSurface(IntPtr dpy, IntPtr config, IntPtr win, IntPtr attrib_list)
+        {
+            return _eglCreateWindowSurface(dpy, config, win, (int*)attrib_list);
+        }
 
 		public static bool eglDestroyContext(IntPtr dpy, IntPtr ctx)
 		{

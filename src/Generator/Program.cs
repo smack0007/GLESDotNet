@@ -522,6 +522,12 @@ namespace GLGenerator
 
                     sb.AppendLine();
                 }
+
+                if (Overloads.ContainsKey(function.Name))
+                {
+                    sb.AppendLine(Overloads[function.Name].Trim('\r', '\n'));
+                    sb.AppendLine();
+                }
             }
 
             sb.AppendLine("\t}");
@@ -762,5 +768,43 @@ namespace GLGenerator
 
             return name;
         }
+
+        // Overloads which are written by hand.
+        private static Dictionary<string, string> Overloads = new Dictionary<string, string>()
+        {
+            ["eglChooseConfig"] = @"
+        public static bool eglChooseConfig(IntPtr dpy, int[] attrib_list, out IntPtr configs, int config_size, out int num_config)
+        {
+            fixed (int* attrib_listPtr = attrib_list)
+            fixed (IntPtr* configsPtr = &configs)
+            fixed (int* num_configPtr = &num_config)
+            {
+                return _eglChooseConfig(dpy, attrib_listPtr, configsPtr, config_size, num_configPtr);
+            }
+        }",
+
+            ["eglCreateContext"] = @"
+        public static IntPtr eglCreateContext(IntPtr dpy, IntPtr config, IntPtr share_context, int[] attrib_list)
+        {
+            fixed (int* attrib_listPtr = attrib_list)
+            {
+                return _eglCreateContext(dpy, config, share_context, attrib_listPtr);
+            }
+        }",
+
+            ["eglCreateWindowSurface"] = @"
+        public static IntPtr eglCreateWindowSurface(IntPtr dpy, IntPtr config, IntPtr win, int[] attrib_list)
+        {
+            fixed (int* attrib_listPtr = attrib_list)
+            {
+                return _eglCreateWindowSurface(dpy, config, win, attrib_listPtr);
+            }
+        }
+
+        public static IntPtr eglCreateWindowSurface(IntPtr dpy, IntPtr config, IntPtr win, IntPtr attrib_list)
+        {
+            return _eglCreateWindowSurface(dpy, config, win, (int*)attrib_list);
+        }",
+        };
     }
 }

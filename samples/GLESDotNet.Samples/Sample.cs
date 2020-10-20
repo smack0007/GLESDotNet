@@ -160,58 +160,43 @@ namespace GLESDotNet.Samples
                 EGL_NONE
             };
 
-            IntPtr config;
-            int configCount;
-            fixed (int* configAttributesPtr = configAttributes)
-            {
-                if (!eglChooseConfig(_display, configAttributesPtr, &config, 1, &configCount) || (configCount != 1))
-                {
-                    throw new InvalidOperationException();
-                }
-            }
+            if (!eglChooseConfig(_display, configAttributes, out var config, 1, out var configCount))
+                throw new InvalidOperationException($"{nameof(eglChooseConfig)} did not return any configurations.");
+
+            if (configCount != 1)
+                throw new InvalidOperationException($"{nameof(eglChooseConfig)} returned multiple configurations.");
 
             int[] surfaceAttributes = new int[]
             {
                 EGL_NONE, EGL_NONE,
             };
 
-            fixed (int* surfaceAttribtuesPtr = surfaceAttributes)
-            {
-                _surface = eglCreateWindowSurface(_display, config, GetNativeWindowHandle(), surfaceAttribtuesPtr);
-            }
+            _surface = eglCreateWindowSurface(_display, config, GetNativeWindowHandle(), surfaceAttributes);            
 
             if (_surface == IntPtr.Zero)
             {
                 eglGetError(); // Clear error and try again
-                _surface = eglCreateWindowSurface(_display, config, IntPtr.Zero, null);
+                _surface = eglCreateWindowSurface(_display, config, IntPtr.Zero, IntPtr.Zero);
             }
 
             if (eglGetError() != EGL_SUCCESS)
-            {
-                throw new InvalidOperationException();
-            }
+                throw new InvalidOperationException($"{nameof(eglCreateWindowSurface)} failed.");
 
-            int[] contextAttibutes = new int[]
+            int[] contextAttributes = new int[]
             {
                 EGL_CONTEXT_CLIENT_VERSION, 2,
                 EGL_NONE
             };
 
-            IntPtr context;
-            fixed (int* contextAttributesPtr = contextAttibutes)
-            {
-                context = eglCreateContext(_display, config, IntPtr.Zero, contextAttributesPtr);
-                if (eglGetError() != EGL_SUCCESS)
-                {
-                    throw new InvalidOperationException();
-                }
-            }
+            var context = eglCreateContext(_display, config, IntPtr.Zero, contextAttributes);
+            
+            if (eglGetError() != EGL_SUCCESS)
+                throw new InvalidOperationException($"{nameof(eglCreateContext)} failed.");
 
             eglMakeCurrent(_display, _surface, _surface, context);
+            
             if (eglGetError() != EGL_SUCCESS)
-            {
-                throw new InvalidOperationException();
-            }
+                throw new InvalidOperationException($"{nameof(eglMakeCurrent)} failed.");
 
             // Turn off vsync
             eglSwapInterval(_display, 0);
