@@ -20,9 +20,6 @@ namespace ImGuiGLESDotNet
 
         private const int VertexSizeInBytes = 20;
 
-        private byte[] _vertexData = new byte[1024 * 1024];
-        private byte[] _indexData = new byte[1024 * 1024];
-
         private uint _vertexBuffer;
         private uint _indexBuffer;
 
@@ -302,12 +299,12 @@ void main()
 
             glUseProgram(_program);
 
-            fixed (byte* vertexDataPtr = _vertexData)
-            {
-                glVertexAttribPointer(0, 2, GL_FLOAT, false, VertexSizeInBytes, vertexDataPtr);
-                glVertexAttribPointer(1, 2, GL_FLOAT, false, VertexSizeInBytes, vertexDataPtr + 8);
-                glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, true, VertexSizeInBytes, vertexDataPtr + 16);
-            }
+            glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
+
+            glVertexAttribPointer(0, 2, GL_FLOAT, false, VertexSizeInBytes, (IntPtr)0);
+            glVertexAttribPointer(1, 2, GL_FLOAT, false, VertexSizeInBytes, (IntPtr)8);
+            glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, true, VertexSizeInBytes, (IntPtr)16);
 
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, _texture);
@@ -317,23 +314,8 @@ void main()
             {
                 ImDrawListPtr cmdList = drawData.CmdListsRange[n];
 
-                fixed (void* vertexDataPtr = _vertexData)
-                {
-                    Buffer.MemoryCopy(
-                        (void*)cmdList.VtxBuffer.Data,
-                        vertexDataPtr,
-                        _vertexData.Length,
-                        cmdList.VtxBuffer.Size * VertexSizeInBytes);
-                }
-
-                fixed (void* indexDataPtr = _indexData)
-                {
-                    Buffer.MemoryCopy(
-                        (void*)cmdList.IdxBuffer.Data,
-                        indexDataPtr,
-                        _indexData.Length,
-                        cmdList.IdxBuffer.Size * sizeof(ushort));
-                }
+                glBufferData(GL_ARRAY_BUFFER, cmdList.VtxBuffer.Size * VertexSizeInBytes, cmdList.VtxBuffer.Data, GL_STREAM_DRAW);
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, cmdList.IdxBuffer.Size * sizeof(ushort), cmdList.IdxBuffer.Data, GL_STREAM_DRAW);
 
                 for (int cmdi = 0; cmdi < cmdList.CmdBuffer.Size; cmdi++)
                 {
@@ -360,14 +342,11 @@ void main()
                         (int)(drawCmd.ClipRect.Z - drawCmd.ClipRect.X),
                         (int)(drawCmd.ClipRect.W - drawCmd.ClipRect.Y));
 
-                    fixed (byte* indexDataPtr = &_indexData[drawCmd.IdxOffset * sizeof(ushort)])
-                    {
-                        glDrawElements(
-                            GL_TRIANGLES,
-                            (int)drawCmd.ElemCount,
-                            GL_UNSIGNED_SHORT,
-                            indexDataPtr);
-                    }
+                    glDrawElements(
+                        GL_TRIANGLES,
+                        (int)drawCmd.ElemCount,
+                        GL_UNSIGNED_SHORT,
+                        (IntPtr)(drawCmd.IdxOffset * sizeof(ushort)));
                 }
             }
         }
