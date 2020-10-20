@@ -285,42 +285,15 @@ void main()
             ImGui.ShowDemoWindow();
 
             // ImGui.SetNextWindowPos(new Vector2(10, 10));
-            //ImGui.SetNextWindowSize(new Vector2(600, 600));
-            //ImGui.Begin("Hello World");
-            //ImGui.Text("This is some text...");
-            //ImGui.InputText("Name", _name, (uint)_name.Length);
-            //ImGui.End();
+            ImGui.SetNextWindowSize(new Vector2(600, 600));
+            ImGui.Begin("Hello World");
+            ImGui.Text("This is some text...");
+            ImGui.InputText("Name", _name, (uint)_name.Length);
+            ImGui.End();
 
             ImGui.Render();
 
             var drawData = ImGui.GetDrawData();
-
-            int vertexOffset = 0;
-            int indexOffset = 0;
-
-            for (int n = 0; n < drawData.CmdListsCount; n++)
-            {
-                ImDrawListPtr cmdList = drawData.CmdListsRange[n];
-
-                fixed (void* vertexDataPtr = &_vertexData[vertexOffset * VertexSizeInBytes])
-                fixed (void* indexDataPtr = &_indexData[indexOffset * sizeof(ushort)])
-                {
-                    Buffer.MemoryCopy(
-                        (void*)cmdList.VtxBuffer.Data,
-                        vertexDataPtr,
-                        _vertexData.Length,
-                        cmdList.VtxBuffer.Size * VertexSizeInBytes);
-
-                    Buffer.MemoryCopy(
-                        (void*)cmdList.IdxBuffer.Data,
-                        indexDataPtr,
-                        _indexData.Length,
-                        cmdList.IdxBuffer.Size * sizeof(ushort));
-                }
-
-                vertexOffset += cmdList.VtxBuffer.Size;
-                indexOffset += cmdList.IdxBuffer.Size;
-            }
 
             glViewport(0, 0, WindowWidth, WindowHeight);
 
@@ -344,6 +317,24 @@ void main()
             for (int n = 0; n < drawData.CmdListsCount; n++)
             {
                 ImDrawListPtr cmdList = drawData.CmdListsRange[n];
+
+                fixed (void* vertexDataPtr = _vertexData)
+                {
+                    Buffer.MemoryCopy(
+                        (void*)cmdList.VtxBuffer.Data,
+                        vertexDataPtr,
+                        _vertexData.Length,
+                        cmdList.VtxBuffer.Size * VertexSizeInBytes);
+                }
+
+                fixed (void* indexDataPtr = _indexData)
+                {
+                    Buffer.MemoryCopy(
+                        (void*)cmdList.IdxBuffer.Data,
+                        indexDataPtr,
+                        _indexData.Length,
+                        cmdList.IdxBuffer.Size * sizeof(ushort));
+                }
 
                 for (int cmdi = 0; cmdi < cmdList.CmdBuffer.Size; cmdi++)
                 {
