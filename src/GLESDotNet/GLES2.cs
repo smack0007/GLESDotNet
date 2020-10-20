@@ -1527,6 +1527,14 @@ namespace GLESDotNet
 			_glGetBooleanv(pname, data);
 		}
 
+		public static void glGetBooleanv(uint pname, ref bool data)
+		{
+			fixed (bool* dataPtr = &data)
+			{
+				_glGetBooleanv(pname, dataPtr);
+			}
+		}
+
 		public static void glGetBufferParameteriv(uint target, uint pname, int* @params)
 		{
 			_glGetBufferParameteriv(target, pname, @params);
@@ -1542,6 +1550,14 @@ namespace GLESDotNet
 			_glGetFloatv(pname, data);
 		}
 
+		public static void glGetFloatv(uint pname, ref float data)
+		{
+			fixed (float* dataPtr = &data)
+			{
+				_glGetFloatv(pname, dataPtr);
+			}
+		}
+
 		public static void glGetFramebufferAttachmentParameteriv(uint target, uint attachment, uint pname, int* @params)
 		{
 			_glGetFramebufferAttachmentParameteriv(target, attachment, pname, @params);
@@ -1550,6 +1566,14 @@ namespace GLESDotNet
 		public static void glGetIntegerv(uint pname, int* data)
 		{
 			_glGetIntegerv(pname, data);
+		}
+
+		public static void glGetIntegerv(uint pname, ref int data)
+		{
+			fixed (int* dataPtr = &data)
+			{
+				_glGetIntegerv(pname, dataPtr);
+			}
 		}
 
 		public static void glGetProgramInfoLog(uint program, int bufSize, int* length, StringBuilder infoLog)
