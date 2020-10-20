@@ -131,22 +131,15 @@ namespace GLESDotNet.Samples
             return glfwGetNativeWindow(_window);
         }
 
-        private unsafe void CreateContext()
+        private void CreateContext()
         {
             _display = eglGetDisplay((IntPtr)EGL_DEFAULT_DISPLAY);
 
-            int majorVersion, minorVersion;
-            if (!eglInitialize(_display, &majorVersion, &minorVersion))
-            {
-                int error = eglGetError();
-                throw new InvalidOperationException();
-            }
+            if (!eglInitialize(_display, out int majorVersion, out int minorVersion))
+                throw new InvalidOperationException($"{nameof(eglInitialize)} failed with error {eglGetError()}.");
 
-            eglBindAPI(EGL_OPENGL_ES_API);
-            if (eglGetError() != EGL_SUCCESS)
-            {
-                throw new InvalidOperationException();
-            }
+            if (!eglBindAPI(EGL_OPENGL_ES_API))
+                throw new InvalidOperationException($"{nameof(eglBindAPI)} failed with error {eglGetError()}.");
 
             int[] configAttributes = new int[]
             {

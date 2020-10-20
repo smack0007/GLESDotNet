@@ -805,6 +805,16 @@ namespace GLGenerator
         {
             return _eglCreateWindowSurface(dpy, config, win, (int*)attrib_list);
         }",
+
+            ["eglInitialize"] = @"
+        public static bool eglInitialize(IntPtr dpy, out int major, out int minor)
+        {
+            fixed (int* majorPtr = &major)
+            fixed (int* minorPtr = &minor)
+            {
+                return _eglInitialize(dpy, majorPtr, minorPtr);
+            }
+        }",
         };
     }
 }

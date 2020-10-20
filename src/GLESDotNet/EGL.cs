@@ -666,6 +666,15 @@ namespace GLESDotNet
 			return _eglInitialize(dpy, major, minor);
 		}
 
+        public static bool eglInitialize(IntPtr dpy, out int major, out int minor)
+        {
+            fixed (int* majorPtr = &major)
+            fixed (int* minorPtr = &minor)
+            {
+                return _eglInitialize(dpy, majorPtr, minorPtr);
+            }
+        }
+
 		public static bool eglMakeCurrent(IntPtr dpy, IntPtr draw, IntPtr read, IntPtr ctx)
 		{
 			return _eglMakeCurrent(dpy, draw, read, ctx);

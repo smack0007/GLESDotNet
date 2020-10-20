@@ -172,8 +172,8 @@ void main()
             _vertProjectionLocation = glGetUniformLocation(_program, "vertProjection");
             _fragTextureLocation = glGetUniformLocation(_program, "fragTexture");
 
-            uint texture;
-            glGenTextures(1, &texture);
+            uint texture = 0;
+            glGenTextures(1, ref texture);
             _texture = texture;
 
             glActiveTexture(GL_TEXTURE0);
