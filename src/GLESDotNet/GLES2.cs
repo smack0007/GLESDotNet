@@ -1821,6 +1821,14 @@ namespace GLESDotNet
 			_glUniform1fv(location, count, value);
 		}
 
+		public static void glUniform1fv(int location, int count, ref float value)
+		{
+			fixed (float* valuePtr = &value)
+			{
+				_glUniform1fv(location, count, valuePtr);
+			}
+		}
+
 		public static void glUniform1i(int location, int v0)
 		{
 			_glUniform1i(location, v0);
@@ -1829,6 +1837,14 @@ namespace GLESDotNet
 		public static void glUniform1iv(int location, int count, int* value)
 		{
 			_glUniform1iv(location, count, value);
+		}
+
+		public static void glUniform1iv(int location, int count, ref int value)
+		{
+			fixed (int* valuePtr = &value)
+			{
+				_glUniform1iv(location, count, valuePtr);
+			}
 		}
 
 		public static void glUniform2f(int location, float v0, float v1)
@@ -1841,6 +1857,14 @@ namespace GLESDotNet
 			_glUniform2fv(location, count, value);
 		}
 
+		public static void glUniform2fv(int location, int count, ref float value)
+		{
+			fixed (float* valuePtr = &value)
+			{
+				_glUniform2fv(location, count, valuePtr);
+			}
+		}
+
 		public static void glUniform2i(int location, int v0, int v1)
 		{
 			_glUniform2i(location, v0, v1);
@@ -1849,6 +1873,14 @@ namespace GLESDotNet
 		public static void glUniform2iv(int location, int count, int* value)
 		{
 			_glUniform2iv(location, count, value);
+		}
+
+		public static void glUniform2iv(int location, int count, ref int value)
+		{
+			fixed (int* valuePtr = &value)
+			{
+				_glUniform2iv(location, count, valuePtr);
+			}
 		}
 
 		public static void glUniform3f(int location, float v0, float v1, float v2)
@@ -1861,6 +1893,14 @@ namespace GLESDotNet
 			_glUniform3fv(location, count, value);
 		}
 
+		public static void glUniform3fv(int location, int count, ref float value)
+		{
+			fixed (float* valuePtr = &value)
+			{
+				_glUniform3fv(location, count, valuePtr);
+			}
+		}
+
 		public static void glUniform3i(int location, int v0, int v1, int v2)
 		{
 			_glUniform3i(location, v0, v1, v2);
@@ -1869,6 +1909,14 @@ namespace GLESDotNet
 		public static void glUniform3iv(int location, int count, int* value)
 		{
 			_glUniform3iv(location, count, value);
+		}
+
+		public static void glUniform3iv(int location, int count, ref int value)
+		{
+			fixed (int* valuePtr = &value)
+			{
+				_glUniform3iv(location, count, valuePtr);
+			}
 		}
 
 		public static void glUniform4f(int location, float v0, float v1, float v2, float v3)
@@ -1881,6 +1929,14 @@ namespace GLESDotNet
 			_glUniform4fv(location, count, value);
 		}
 
+		public static void glUniform4fv(int location, int count, ref float value)
+		{
+			fixed (float* valuePtr = &value)
+			{
+				_glUniform4fv(location, count, valuePtr);
+			}
+		}
+
 		public static void glUniform4i(int location, int v0, int v1, int v2, int v3)
 		{
 			_glUniform4i(location, v0, v1, v2, v3);
@@ -1891,9 +1947,25 @@ namespace GLESDotNet
 			_glUniform4iv(location, count, value);
 		}
 
+		public static void glUniform4iv(int location, int count, ref int value)
+		{
+			fixed (int* valuePtr = &value)
+			{
+				_glUniform4iv(location, count, valuePtr);
+			}
+		}
+
 		public static void glUniformMatrix2fv(int location, int count, bool transpose, float* value)
 		{
 			_glUniformMatrix2fv(location, count, transpose, value);
+		}
+
+		public static void glUniformMatrix2fv(int location, int count, bool transpose, ref float value)
+		{
+			fixed (float* valuePtr = &value)
+			{
+				_glUniformMatrix2fv(location, count, transpose, valuePtr);
+			}
 		}
 
 		public static void glUniformMatrix3fv(int location, int count, bool transpose, float* value)
@@ -1901,9 +1973,25 @@ namespace GLESDotNet
 			_glUniformMatrix3fv(location, count, transpose, value);
 		}
 
+		public static void glUniformMatrix3fv(int location, int count, bool transpose, ref float value)
+		{
+			fixed (float* valuePtr = &value)
+			{
+				_glUniformMatrix3fv(location, count, transpose, valuePtr);
+			}
+		}
+
 		public static void glUniformMatrix4fv(int location, int count, bool transpose, float* value)
 		{
 			_glUniformMatrix4fv(location, count, transpose, value);
+		}
+
+		public static void glUniformMatrix4fv(int location, int count, bool transpose, ref float value)
+		{
+			fixed (float* valuePtr = &value)
+			{
+				_glUniformMatrix4fv(location, count, transpose, valuePtr);
+			}
 		}
 
 		public static void glUseProgram(uint program)

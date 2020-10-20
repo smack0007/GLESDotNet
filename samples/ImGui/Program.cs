@@ -23,6 +23,9 @@ namespace ImGuiGLESDotNet
         private byte[] _vertexData = new byte[1024 * 1024];
         private byte[] _indexData = new byte[1024 * 1024];
 
+        private uint _vertexBuffer;
+        private uint _indexBuffer;
+
         private Dictionary<int, bool> _keyStates = new Dictionary<int, bool>()
         {
             [GLFW_KEY_TAB] = false,
@@ -209,6 +212,9 @@ void main()
             glEnableVertexAttribArray(1);
             glEnableVertexAttribArray(2);
 
+            glGenBuffers(1, ref _vertexBuffer);
+            glGenBuffers(1, ref _indexBuffer);
+
             glEnable(GL_BLEND);
             glBlendEquation(GL_FUNC_ADD);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -353,10 +359,7 @@ void main()
                         (R+L)/(L-R),  (T+B)/(B-T),  0.0f,   1.0f,
                     };
 
-                    fixed (float* projectionPtr = projection)
-                    {
-                        glUniformMatrix4fv(_vertProjectionLocation, 1, false, projectionPtr);
-                    }
+                    glUniformMatrix4fv(_vertProjectionLocation, 1, false, ref projection[0]);
 
                     glScissor(
                         (int)drawCmd.ClipRect.X,
