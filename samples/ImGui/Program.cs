@@ -188,15 +188,8 @@ void main()
             var io = ImGui.GetIO();
             io.Fonts.AddFontDefault();
 
-            io.Fonts.GetTexDataAsRGBA32(out byte* pixelData, out int width, out int height, out int bytesPerPixel);
-
-            var pixels = new byte[width * height * bytesPerPixel];
-            Marshal.Copy(new IntPtr(pixelData), pixels, 0, pixels.Length);
-
-            fixed (byte* pixelsPtr = pixels)
-            {
-                glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelsPtr);
-            }
+            io.Fonts.GetTexDataAsRGBA32(out byte* pixels, out int width, out int height, out int _);
+            glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)GL_LINEAR);

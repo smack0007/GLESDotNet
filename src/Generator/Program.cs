@@ -43,7 +43,11 @@ namespace GLGenerator
 
             public List<FunctionParamData> Params { get; } = new List<FunctionParamData>();
 
-            public bool GenerateByRefOverload => Params.Any(x => x.UseForByRefOverload);
+            public bool GenerateIntPtrOverload => Params.Any(x => x.Type == "void*");
+
+            public bool GenerateGenericOverload => Params.Any(x => x.UseForGenericOverload);
+
+            public bool GenerateRefOverload => Params.Any(x => x.UseForRefOverload);
 
             public FunctionData() { }
 
@@ -76,8 +80,10 @@ namespace GLGenerator
             public string Type { get; set; } = "";
 
             public string Name { get; set; } = "";
+            
+            public bool UseForGenericOverload { get; set; }
 
-            public bool UseForByRefOverload { get; set; }
+            public bool UseForRefOverload { get; set; }
 
             public FunctionParamData() { }
 
@@ -104,26 +110,20 @@ namespace GLGenerator
         {
             var (enums, functions) = Parse("gl2.h", "GL", "GL_APICALL", "GL_APIENTRY");
 
-            //var glBufferData = functions.Single(x => x.Name == "glBufferData");
-            //glBufferData.Params.Single(x => x.Name == "data").UseForVoidPointerOverload = true;
+            var glBufferData = functions.Single(x => x.Name == "glBufferData");
+            glBufferData.Params.Single(x => x.Name == "data").UseForGenericOverload = true;
 
-            //var glBufferSubData = functions.Single(x => x.Name == "glBufferSubData");
-            //glBufferSubData.Params.Single(x => x.Name == "data").UseForVoidPointerOverload = true;
+            var glBufferSubData = functions.Single(x => x.Name == "glBufferSubData");
+            glBufferSubData.Params.Single(x => x.Name == "data").UseForGenericOverload = true;
 
-            //var glTexImage1D = functions.Single(x => x.Name == "glTexImage1D");
-            //glTexImage1D.Params.Single(x => x.Name == "pixels").UseForVoidPointerOverload = true;
-
-            //var glTexImage2D = functions.Single(x => x.Name == "glTexImage2D");
-            //glTexImage2D.Params.Single(x => x.Name == "pixels").UseForVoidPointerOverload = true;
-
-            //var glTexImage3D = functions.Single(x => x.Name == "glTexImage3D");
-            //glTexImage3D.Params.Single(x => x.Name == "pixels").UseForVoidPointerOverload = true;
+            var glTexImage2D = functions.Single(x => x.Name == "glTexImage2D");
+            glTexImage2D.Params.Single(x => x.Name == "pixels").UseForGenericOverload = true;
 
             foreach (var function in functions.Where(x =>
                 x.Name.StartsWith("glGen") &&
                 x.Params.Last().Type == "GLuint*"))
             {
-                function.Params.Last().UseForByRefOverload = true;
+                function.Params.Last().UseForRefOverload = true;
             }
 
             foreach (var function in functions.Where(x =>
@@ -131,7 +131,7 @@ namespace GLGenerator
                 x.Name.EndsWith("v") &&
                 x.Params.Any(y => y.Name == "data")))
             {
-                function.Params.Single(x => x.Name == "data").UseForByRefOverload = true;
+                function.Params.Single(x => x.Name == "data").UseForRefOverload = true;
             }
 
             foreach (var function in functions.Where(x =>
@@ -139,7 +139,7 @@ namespace GLGenerator
                 x.Name.EndsWith("v") &&
                 x.Params.Any(y => y.Name == "value")))
             {
-                function.Params.Single(x => x.Name == "value").UseForByRefOverload = true;
+                function.Params.Single(x => x.Name == "value").UseForRefOverload = true;
             }
 
             Write(
@@ -389,11 +389,27 @@ namespace GLGenerator
 
             foreach (var function in orderedFunctions)
             {
-                if (!Methods.ContainsKey(function.Name))
+                string returnType = GetReturnType(function.ReturnType);
+                string parameters = string.Join(", ", function.Params.Select(x => GetParamType(x) + " " + GetParamName(x.Name)));
+                string parameterNames = string.Join(", ", function.Params.Select(x => GetParamName(x.Name)));
+
+                sb.AppendLine($"\t\tpublic static {returnType} {function.Name}({parameters})");
+                sb.AppendLine("\t\t{");
+
+                sb.Append("\t\t\t");
+
+                if (returnType != "void")
+                    sb.Append("return ");
+
+                sb.AppendLine($"_{function.Name}({parameterNames});");
+
+                sb.AppendLine("\t\t}");
+                sb.AppendLine();
+
+                if (function.GenerateIntPtrOverload)
                 {
-                    string returnType = GetReturnType(function.ReturnType);
-                    string parameters = string.Join(", ", function.Params.Select(x => GetParamType(x) + " " + GetParamName(x.Name)));
-                    string parameterNames = string.Join(", ", function.Params.Select(x => GetParamName(x.Name)));
+                    parameters = string.Join(", ", function.Params.Select(x => (GetParamType(x) == "void*" ? "IntPtr" : GetParamType(x)) + " " + GetParamName(x.Name)));
+                    parameterNames = string.Join(", ", function.Params.Select(x => (GetParamType(x) == "void*" ? "(void*)" : "") + GetParamName(x.Name)));
 
                     sb.AppendLine($"\t\tpublic static {returnType} {function.Name}({parameters})");
                     sb.AppendLine("\t\t{");
@@ -406,24 +422,53 @@ namespace GLGenerator
                     sb.AppendLine($"_{function.Name}({parameterNames});");
 
                     sb.AppendLine("\t\t}");
-                }
-                else
-                {
-                    sb.AppendLine("\t\t" + Methods[function.Name].Trim());
+                    sb.AppendLine();
                 }
 
-                sb.AppendLine();
-
-                if (function.GenerateByRefOverload)
+                if (function.GenerateGenericOverload)
                 {
-                    string returnType = GetReturnType(function.ReturnType);
-                    string parameters = string.Join(", ", function.Params.Select(x => (x.UseForByRefOverload ? "ref " : "") + GetParamType(x, isRefOverload: x.UseForByRefOverload) + " " + GetParamName(x.Name)));
-                    string parameterNames = string.Join(", ", function.Params.Select(x => GetParamName(x.Name) + (x.UseForByRefOverload ? "Ptr" : "")));
+                    parameters = string.Join(", ", function.Params.Select(x => (x.UseForGenericOverload ? "T[]" : GetParamType(x)) + " " + GetParamName(x.Name)));
+                    parameterNames = string.Join(", ", function.Params.Select(x => (x.UseForGenericOverload ? "(void*)" : "") + GetParamName(x.Name) + (x.UseForGenericOverload ? "Ptr.AddrOfPinnedObject()" : "")));
+
+                    sb.AppendLine($"\t\tpublic static {returnType} {function.Name}<T>({parameters})");
+                    sb.AppendLine("\t\t\twhere T: struct");
+                    sb.AppendLine("\t\t{");
+
+                    foreach (var param in function.Params.Where(x => x.UseForGenericOverload))
+                        sb.AppendLine($"\t\t\tvar {GetParamName(param.Name)}Ptr = GCHandle.Alloc({GetParamName(param.Name)}, GCHandleType.Pinned);");
+
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\ttry");
+                    sb.AppendLine("\t\t\t{");
+                    sb.Append("\t\t\t\t");
+
+                    if (returnType != "void")
+                        sb.Append("return ");
+
+                    sb.AppendLine($"_{function.Name}({parameterNames});");
+
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine("\t\t\tfinally");
+                    sb.AppendLine("\t\t\t{");
+
+                    foreach (var param in function.Params.Where(x => x.UseForGenericOverload))
+                        sb.AppendLine($"\t\t\t\t{GetParamName(param.Name)}Ptr.Free();");
+
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine("\t\t}");
+
+                    sb.AppendLine();
+                }
+
+                if (function.GenerateRefOverload)
+                {
+                    parameters = string.Join(", ", function.Params.Select(x => (x.UseForRefOverload ? "ref " : "") + GetParamType(x, isRefOverload: x.UseForRefOverload) + " " + GetParamName(x.Name)));
+                    parameterNames = string.Join(", ", function.Params.Select(x => GetParamName(x.Name) + (x.UseForRefOverload ? "Ptr" : "")));
 
                     sb.AppendLine($"\t\tpublic static {returnType} {function.Name}({parameters})");
                     sb.AppendLine("\t\t{");
 
-                    foreach (var param in function.Params.Where(x => x.UseForByRefOverload))
+                    foreach (var param in function.Params.Where(x => x.UseForRefOverload))
                         sb.AppendLine($"\t\t\tfixed ({GetParamType(param)} {GetParamName(param.Name)}Ptr = &{GetParamName(param.Name)})");
                     
                     sb.AppendLine("\t\t\t{");
@@ -680,9 +725,5 @@ namespace GLGenerator
 
             return name;
         }
-
-        private static readonly Dictionary<string, string> Methods = new Dictionary<string, string>()
-        {
-        };
     }
 }

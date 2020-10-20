@@ -1265,9 +1265,49 @@ namespace GLESDotNet
 			_glBufferData(target, size, data, usage);
 		}
 
+		public static void glBufferData(uint target, int size, IntPtr data, uint usage)
+		{
+			_glBufferData(target, size, (void*)data, usage);
+		}
+
+		public static void glBufferData<T>(uint target, int size, T[] data, uint usage)
+			where T: struct
+		{
+			var dataPtr = GCHandle.Alloc(data, GCHandleType.Pinned);
+
+			try
+			{
+				_glBufferData(target, size, (void*)dataPtr.AddrOfPinnedObject(), usage);
+			}
+			finally
+			{
+				dataPtr.Free();
+			}
+		}
+
 		public static void glBufferSubData(uint target, int offset, int size, void* data)
 		{
 			_glBufferSubData(target, offset, size, data);
+		}
+
+		public static void glBufferSubData(uint target, int offset, int size, IntPtr data)
+		{
+			_glBufferSubData(target, offset, size, (void*)data);
+		}
+
+		public static void glBufferSubData<T>(uint target, int offset, int size, T[] data)
+			where T: struct
+		{
+			var dataPtr = GCHandle.Alloc(data, GCHandleType.Pinned);
+
+			try
+			{
+				_glBufferSubData(target, offset, size, (void*)dataPtr.AddrOfPinnedObject());
+			}
+			finally
+			{
+				dataPtr.Free();
+			}
 		}
 
 		public static uint glCheckFramebufferStatus(uint target)
@@ -1310,9 +1350,19 @@ namespace GLESDotNet
 			_glCompressedTexImage2D(target, level, internalformat, width, height, border, imageSize, data);
 		}
 
+		public static void glCompressedTexImage2D(uint target, int level, uint internalformat, int width, int height, int border, int imageSize, IntPtr data)
+		{
+			_glCompressedTexImage2D(target, level, internalformat, width, height, border, imageSize, (void*)data);
+		}
+
 		public static void glCompressedTexSubImage2D(uint target, int level, int xoffset, int yoffset, int width, int height, uint format, int imageSize, void* data)
 		{
 			_glCompressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, imageSize, data);
+		}
+
+		public static void glCompressedTexSubImage2D(uint target, int level, int xoffset, int yoffset, int width, int height, uint format, int imageSize, IntPtr data)
+		{
+			_glCompressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, imageSize, (void*)data);
 		}
 
 		public static void glCopyTexImage2D(uint target, int level, uint internalformat, int x, int y, int width, int height, int border)
@@ -1408,6 +1458,11 @@ namespace GLESDotNet
 		public static void glDrawElements(uint mode, int count, uint type, void* indices)
 		{
 			_glDrawElements(mode, count, type, indices);
+		}
+
+		public static void glDrawElements(uint mode, int count, uint type, IntPtr indices)
+		{
+			_glDrawElements(mode, count, type, (void*)indices);
 		}
 
 		public static void glEnable(uint cap)
@@ -1721,6 +1776,11 @@ namespace GLESDotNet
 			_glReadPixels(x, y, width, height, format, type, pixels);
 		}
 
+		public static void glReadPixels(int x, int y, int width, int height, uint format, uint type, IntPtr pixels)
+		{
+			_glReadPixels(x, y, width, height, format, type, (void*)pixels);
+		}
+
 		public static void glReleaseShaderCompiler()
 		{
 			_glReleaseShaderCompiler();
@@ -1744,6 +1804,11 @@ namespace GLESDotNet
 		public static void glShaderBinary(int count, uint* shaders, uint binaryformat, void* binary, int length)
 		{
 			_glShaderBinary(count, shaders, binaryformat, binary, length);
+		}
+
+		public static void glShaderBinary(int count, uint* shaders, uint binaryformat, IntPtr binary, int length)
+		{
+			_glShaderBinary(count, shaders, binaryformat, (void*)binary, length);
 		}
 
 		public static void glShaderSource(uint shader, int count, string[] @string, int* length)
@@ -1786,6 +1851,26 @@ namespace GLESDotNet
 			_glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
 		}
 
+		public static void glTexImage2D(uint target, int level, int internalformat, int width, int height, int border, uint format, uint type, IntPtr pixels)
+		{
+			_glTexImage2D(target, level, internalformat, width, height, border, format, type, (void*)pixels);
+		}
+
+		public static void glTexImage2D<T>(uint target, int level, int internalformat, int width, int height, int border, uint format, uint type, T[] pixels)
+			where T: struct
+		{
+			var pixelsPtr = GCHandle.Alloc(pixels, GCHandleType.Pinned);
+
+			try
+			{
+				_glTexImage2D(target, level, internalformat, width, height, border, format, type, (void*)pixelsPtr.AddrOfPinnedObject());
+			}
+			finally
+			{
+				pixelsPtr.Free();
+			}
+		}
+
 		public static void glTexParameterf(uint target, uint pname, float param)
 		{
 			_glTexParameterf(target, pname, param);
@@ -1809,6 +1894,11 @@ namespace GLESDotNet
 		public static void glTexSubImage2D(uint target, int level, int xoffset, int yoffset, int width, int height, uint format, uint type, void* pixels)
 		{
 			_glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
+		}
+
+		public static void glTexSubImage2D(uint target, int level, int xoffset, int yoffset, int width, int height, uint format, uint type, IntPtr pixels)
+		{
+			_glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, (void*)pixels);
 		}
 
 		public static void glUniform1f(int location, float v0)
@@ -2047,6 +2137,11 @@ namespace GLESDotNet
 		public static void glVertexAttribPointer(uint index, int size, uint type, bool normalized, int stride, void* pointer)
 		{
 			_glVertexAttribPointer(index, size, type, normalized, stride, pointer);
+		}
+
+		public static void glVertexAttribPointer(uint index, int size, uint type, bool normalized, int stride, IntPtr pointer)
+		{
+			_glVertexAttribPointer(index, size, type, normalized, stride, (void*)pointer);
 		}
 
 		public static void glViewport(int x, int y, int width, int height)

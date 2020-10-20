@@ -530,9 +530,19 @@ namespace GLESDotNet
 			return _eglCreatePlatformPixmapSurface(dpy, config, native_pixmap, attrib_list);
 		}
 
+		public static IntPtr eglCreatePlatformPixmapSurface(IntPtr dpy, IntPtr config, IntPtr native_pixmap, IntPtr* attrib_list)
+		{
+			return _eglCreatePlatformPixmapSurface(dpy, config, (void*)native_pixmap, attrib_list);
+		}
+
 		public static IntPtr eglCreatePlatformWindowSurface(IntPtr dpy, IntPtr config, void* native_window, IntPtr* attrib_list)
 		{
 			return _eglCreatePlatformWindowSurface(dpy, config, native_window, attrib_list);
+		}
+
+		public static IntPtr eglCreatePlatformWindowSurface(IntPtr dpy, IntPtr config, IntPtr native_window, IntPtr* attrib_list)
+		{
+			return _eglCreatePlatformWindowSurface(dpy, config, (void*)native_window, attrib_list);
 		}
 
 		public static IntPtr eglCreateSync(IntPtr dpy, int type, IntPtr* attrib_list)
@@ -603,6 +613,11 @@ namespace GLESDotNet
 		public static IntPtr eglGetPlatformDisplay(int platform, void* native_display, IntPtr* attrib_list)
 		{
 			return _eglGetPlatformDisplay(platform, native_display, attrib_list);
+		}
+
+		public static IntPtr eglGetPlatformDisplay(int platform, IntPtr native_display, IntPtr* attrib_list)
+		{
+			return _eglGetPlatformDisplay(platform, (void*)native_display, attrib_list);
 		}
 
 		public static IntPtr eglGetProcAddress(string procname)
