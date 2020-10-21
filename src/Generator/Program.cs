@@ -47,6 +47,8 @@ namespace GLGenerator
 
             public bool GenerateGenericOverload => Params.Any(x => x.UseForGenericOverload);
 
+            public bool GenerateOutOverload => Params.Any(x => x.UseForOutOverload);
+
             public bool GenerateRefOverload => Params.Any(x => x.UseForRefOverload);
 
             public FunctionData() { }
@@ -85,6 +87,8 @@ namespace GLGenerator
 
             public bool UseForRefOverload { get; set; }
 
+            public bool UseForOutOverload { get; set; }
+
             public FunctionParamData() { }
 
             public FunctionParamData(FunctionParamData functionParamData)
@@ -122,11 +126,22 @@ namespace GLGenerator
             var glTexImage2D = functions.Single(x => x.Name == "glTexImage2D");
             glTexImage2D.Params.Single(x => x.Name == "pixels").UseForGenericOverload = true;
 
+            var glVertexAttribPointer = functions.Single(x => x.Name == "glVertexAttribPointer");
+            glVertexAttribPointer.Params.Single(x => x.Name == "pointer").UseForGenericOverload = true;
+
             foreach (var function in functions.Where(x =>
                 x.Name.StartsWith("glGen") &&
                 x.Params.Last().Type == "GLuint*"))
             {
-                function.Params.Last().UseForRefOverload = true;
+                function.Params.Last().UseForOutOverload = true;
+            }
+
+            foreach (var function in functions.Where(x =>
+                x.Name.StartsWith("glGet") &&
+                x.Name.EndsWith("InfoLog") &&
+                x.Params.Any(y => y.Name == "length")))
+            {
+                function.Params.Single(x => x.Name == "length").UseForOutOverload = true;
             }
 
             foreach (var function in functions.Where(x =>
@@ -134,7 +149,15 @@ namespace GLGenerator
                 x.Name.EndsWith("v") &&
                 x.Params.Any(y => y.Name == "data")))
             {
-                function.Params.Single(x => x.Name == "data").UseForRefOverload = true;
+                function.Params.Single(x => x.Name == "data").UseForOutOverload = true;
+            }
+
+            foreach (var function in functions.Where(x =>
+                x.Name.StartsWith("glGet") &&
+                x.Name.EndsWith("v") &&
+                x.Params.Any(y => y.Name == "params")))
+            {
+                function.Params.Single(x => x.Name == "params").UseForOutOverload = true;
             }
 
             foreach (var function in functions.Where(x =>
@@ -143,6 +166,14 @@ namespace GLGenerator
                 x.Params.Any(y => y.Name == "value")))
             {
                 function.Params.Single(x => x.Name == "value").UseForRefOverload = true;
+            }
+
+            foreach (var function in functions.Where(x =>
+                x.Name.StartsWith("glVertexAttrib") &&
+                x.Name.EndsWith("v") &&
+                x.Params.Any(y => y.Name == "v")))
+            {
+                function.Params.Single(x => x.Name == "v").UseForRefOverload = true;
             }
 
             Write(
@@ -499,7 +530,7 @@ namespace GLGenerator
 
                 if (function.GenerateRefOverload)
                 {
-                    parameters = string.Join(", ", function.Params.Select(x => (x.UseForRefOverload ? "ref " : "") + GetParamType(x, isRefOverload: x.UseForRefOverload) + " " + GetParamName(x.Name)));
+                    parameters = string.Join(", ", function.Params.Select(x => (x.UseForRefOverload ? "ref " : "") + GetParamType(x, isRefOrOutOverload: x.UseForRefOverload) + " " + GetParamName(x.Name)));
                     parameterNames = string.Join(", ", function.Params.Select(x => GetParamName(x.Name) + (x.UseForRefOverload ? "Ptr" : "")));
 
                     sb.AppendLine($"\t\tpublic static {returnType} {function.Name}({parameters})");
@@ -508,6 +539,32 @@ namespace GLGenerator
                     foreach (var param in function.Params.Where(x => x.UseForRefOverload))
                         sb.AppendLine($"\t\t\tfixed ({GetParamType(param)} {GetParamName(param.Name)}Ptr = &{GetParamName(param.Name)})");
                     
+                    sb.AppendLine("\t\t\t{");
+                    sb.Append("\t\t\t\t");
+
+                    if (returnType != "void")
+                        sb.Append("return ");
+
+                    sb.AppendLine($"_{function.Name}({parameterNames});");
+
+                    sb.AppendLine("\t\t\t}");
+
+                    sb.AppendLine("\t\t}");
+
+                    sb.AppendLine();
+                }
+
+                if (function.GenerateOutOverload)
+                {
+                    parameters = string.Join(", ", function.Params.Select(x => (x.UseForOutOverload ? "out " : "") + GetParamType(x, isRefOrOutOverload: x.UseForOutOverload) + " " + GetParamName(x.Name)));
+                    parameterNames = string.Join(", ", function.Params.Select(x => GetParamName(x.Name) + (x.UseForOutOverload ? "Ptr" : "")));
+
+                    sb.AppendLine($"\t\tpublic static {returnType} {function.Name}({parameters})");
+                    sb.AppendLine("\t\t{");
+
+                    foreach (var param in function.Params.Where(x => x.UseForOutOverload))
+                        sb.AppendLine($"\t\t\tfixed ({GetParamType(param)} {GetParamName(param.Name)}Ptr = &{GetParamName(param.Name)})");
+
                     sb.AppendLine("\t\t\t{");
                     sb.Append("\t\t\t\t");
 
@@ -580,7 +637,7 @@ namespace GLGenerator
             return returnType;
         }
 
-        private static string GetParamType(FunctionParamData param, bool isRefOverload = false)
+        private static string GetParamType(FunctionParamData param, bool isRefOrOutOverload = false)
         {
             string type = param.Type;
 
@@ -751,7 +808,7 @@ namespace GLGenerator
                 }
             }
 
-            if (isRefOverload)
+            if (isRefOrOutOverload)
                 type = type.TrimEnd('*');
 
             return type;
@@ -814,6 +871,13 @@ namespace GLGenerator
             {
                 return _eglInitialize(dpy, majorPtr, minorPtr);
             }
+        }",
+
+            ["glShaderSource"] = @"
+        public static void glShaderSource(uint shader, string @string)
+        {
+            int length = @string.Length;
+            _glShaderSource(shader, 1, new string[] { @string }, &length);
         }",
         };
     }

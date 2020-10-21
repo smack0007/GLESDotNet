@@ -1565,7 +1565,7 @@ namespace GLESDotNet
 			_glGenBuffers(n, buffers);
 		}
 
-		public static void glGenBuffers(int n, ref uint buffers)
+		public static void glGenBuffers(int n, out uint buffers)
 		{
 			fixed (uint* buffersPtr = &buffers)
 			{
@@ -1583,7 +1583,7 @@ namespace GLESDotNet
 			_glGenFramebuffers(n, framebuffers);
 		}
 
-		public static void glGenFramebuffers(int n, ref uint framebuffers)
+		public static void glGenFramebuffers(int n, out uint framebuffers)
 		{
 			fixed (uint* framebuffersPtr = &framebuffers)
 			{
@@ -1596,7 +1596,7 @@ namespace GLESDotNet
 			_glGenRenderbuffers(n, renderbuffers);
 		}
 
-		public static void glGenRenderbuffers(int n, ref uint renderbuffers)
+		public static void glGenRenderbuffers(int n, out uint renderbuffers)
 		{
 			fixed (uint* renderbuffersPtr = &renderbuffers)
 			{
@@ -1609,7 +1609,7 @@ namespace GLESDotNet
 			_glGenTextures(n, textures);
 		}
 
-		public static void glGenTextures(int n, ref uint textures)
+		public static void glGenTextures(int n, out uint textures)
 		{
 			fixed (uint* texturesPtr = &textures)
 			{
@@ -1642,7 +1642,7 @@ namespace GLESDotNet
 			_glGetBooleanv(pname, data);
 		}
 
-		public static void glGetBooleanv(uint pname, ref bool data)
+		public static void glGetBooleanv(uint pname, out bool data)
 		{
 			fixed (bool* dataPtr = &data)
 			{
@@ -1655,6 +1655,14 @@ namespace GLESDotNet
 			_glGetBufferParameteriv(target, pname, @params);
 		}
 
+		public static void glGetBufferParameteriv(uint target, uint pname, out int @params)
+		{
+			fixed (int* @paramsPtr = &@params)
+			{
+				_glGetBufferParameteriv(target, pname, @paramsPtr);
+			}
+		}
+
 		public static uint glGetError()
 		{
 			return _glGetError();
@@ -1665,7 +1673,7 @@ namespace GLESDotNet
 			_glGetFloatv(pname, data);
 		}
 
-		public static void glGetFloatv(uint pname, ref float data)
+		public static void glGetFloatv(uint pname, out float data)
 		{
 			fixed (float* dataPtr = &data)
 			{
@@ -1678,12 +1686,20 @@ namespace GLESDotNet
 			_glGetFramebufferAttachmentParameteriv(target, attachment, pname, @params);
 		}
 
+		public static void glGetFramebufferAttachmentParameteriv(uint target, uint attachment, uint pname, out int @params)
+		{
+			fixed (int* @paramsPtr = &@params)
+			{
+				_glGetFramebufferAttachmentParameteriv(target, attachment, pname, @paramsPtr);
+			}
+		}
+
 		public static void glGetIntegerv(uint pname, int* data)
 		{
 			_glGetIntegerv(pname, data);
 		}
 
-		public static void glGetIntegerv(uint pname, ref int data)
+		public static void glGetIntegerv(uint pname, out int data)
 		{
 			fixed (int* dataPtr = &data)
 			{
@@ -1696,9 +1712,25 @@ namespace GLESDotNet
 			_glGetProgramInfoLog(program, bufSize, length, infoLog);
 		}
 
+		public static void glGetProgramInfoLog(uint program, int bufSize, out int length, StringBuilder infoLog)
+		{
+			fixed (int* lengthPtr = &length)
+			{
+				_glGetProgramInfoLog(program, bufSize, lengthPtr, infoLog);
+			}
+		}
+
 		public static void glGetProgramiv(uint program, uint pname, int* @params)
 		{
 			_glGetProgramiv(program, pname, @params);
+		}
+
+		public static void glGetProgramiv(uint program, uint pname, out int @params)
+		{
+			fixed (int* @paramsPtr = &@params)
+			{
+				_glGetProgramiv(program, pname, @paramsPtr);
+			}
 		}
 
 		public static void glGetRenderbufferParameteriv(uint target, uint pname, int* @params)
@@ -1706,14 +1738,38 @@ namespace GLESDotNet
 			_glGetRenderbufferParameteriv(target, pname, @params);
 		}
 
+		public static void glGetRenderbufferParameteriv(uint target, uint pname, out int @params)
+		{
+			fixed (int* @paramsPtr = &@params)
+			{
+				_glGetRenderbufferParameteriv(target, pname, @paramsPtr);
+			}
+		}
+
 		public static void glGetShaderInfoLog(uint shader, int bufSize, int* length, StringBuilder infoLog)
 		{
 			_glGetShaderInfoLog(shader, bufSize, length, infoLog);
 		}
 
+		public static void glGetShaderInfoLog(uint shader, int bufSize, out int length, StringBuilder infoLog)
+		{
+			fixed (int* lengthPtr = &length)
+			{
+				_glGetShaderInfoLog(shader, bufSize, lengthPtr, infoLog);
+			}
+		}
+
 		public static void glGetShaderiv(uint shader, uint pname, int* @params)
 		{
 			_glGetShaderiv(shader, pname, @params);
+		}
+
+		public static void glGetShaderiv(uint shader, uint pname, out int @params)
+		{
+			fixed (int* @paramsPtr = &@params)
+			{
+				_glGetShaderiv(shader, pname, @paramsPtr);
+			}
 		}
 
 		public static void glGetShaderPrecisionFormat(uint shadertype, uint precisiontype, int* range, int* precision)
@@ -1736,9 +1792,25 @@ namespace GLESDotNet
 			_glGetTexParameterfv(target, pname, @params);
 		}
 
+		public static void glGetTexParameterfv(uint target, uint pname, out float @params)
+		{
+			fixed (float* @paramsPtr = &@params)
+			{
+				_glGetTexParameterfv(target, pname, @paramsPtr);
+			}
+		}
+
 		public static void glGetTexParameteriv(uint target, uint pname, int* @params)
 		{
 			_glGetTexParameteriv(target, pname, @params);
+		}
+
+		public static void glGetTexParameteriv(uint target, uint pname, out int @params)
+		{
+			fixed (int* @paramsPtr = &@params)
+			{
+				_glGetTexParameteriv(target, pname, @paramsPtr);
+			}
 		}
 
 		public static void glGetUniformfv(uint program, int location, float* @params)
@@ -1746,9 +1818,25 @@ namespace GLESDotNet
 			_glGetUniformfv(program, location, @params);
 		}
 
+		public static void glGetUniformfv(uint program, int location, out float @params)
+		{
+			fixed (float* @paramsPtr = &@params)
+			{
+				_glGetUniformfv(program, location, @paramsPtr);
+			}
+		}
+
 		public static void glGetUniformiv(uint program, int location, int* @params)
 		{
 			_glGetUniformiv(program, location, @params);
+		}
+
+		public static void glGetUniformiv(uint program, int location, out int @params)
+		{
+			fixed (int* @paramsPtr = &@params)
+			{
+				_glGetUniformiv(program, location, @paramsPtr);
+			}
 		}
 
 		public static int glGetUniformLocation(uint program, string name)
@@ -1761,9 +1849,25 @@ namespace GLESDotNet
 			_glGetVertexAttribfv(index, pname, @params);
 		}
 
+		public static void glGetVertexAttribfv(uint index, uint pname, out float @params)
+		{
+			fixed (float* @paramsPtr = &@params)
+			{
+				_glGetVertexAttribfv(index, pname, @paramsPtr);
+			}
+		}
+
 		public static void glGetVertexAttribiv(uint index, uint pname, int* @params)
 		{
 			_glGetVertexAttribiv(index, pname, @params);
+		}
+
+		public static void glGetVertexAttribiv(uint index, uint pname, out int @params)
+		{
+			fixed (int* @paramsPtr = &@params)
+			{
+				_glGetVertexAttribiv(index, pname, @paramsPtr);
+			}
 		}
 
 		public static void glGetVertexAttribPointerv(uint index, uint pname, void** pointer)
@@ -1875,6 +1979,12 @@ namespace GLESDotNet
 		{
 			_glShaderSource(shader, count, @string, length);
 		}
+
+        public static void glShaderSource(uint shader, string @string)
+        {
+            int length = @string.Length;
+            _glShaderSource(shader, 1, new string[] { @string }, &length);
+        }
 
 		public static void glStencilFunc(uint func, int @ref, uint mask)
 		{
@@ -2179,6 +2289,14 @@ namespace GLESDotNet
 			_glVertexAttrib1fv(index, v);
 		}
 
+		public static void glVertexAttrib1fv(uint index, ref float v)
+		{
+			fixed (float* vPtr = &v)
+			{
+				_glVertexAttrib1fv(index, vPtr);
+			}
+		}
+
 		public static void glVertexAttrib2f(uint index, float x, float y)
 		{
 			_glVertexAttrib2f(index, x, y);
@@ -2187,6 +2305,14 @@ namespace GLESDotNet
 		public static void glVertexAttrib2fv(uint index, float* v)
 		{
 			_glVertexAttrib2fv(index, v);
+		}
+
+		public static void glVertexAttrib2fv(uint index, ref float v)
+		{
+			fixed (float* vPtr = &v)
+			{
+				_glVertexAttrib2fv(index, vPtr);
+			}
 		}
 
 		public static void glVertexAttrib3f(uint index, float x, float y, float z)
@@ -2199,6 +2325,14 @@ namespace GLESDotNet
 			_glVertexAttrib3fv(index, v);
 		}
 
+		public static void glVertexAttrib3fv(uint index, ref float v)
+		{
+			fixed (float* vPtr = &v)
+			{
+				_glVertexAttrib3fv(index, vPtr);
+			}
+		}
+
 		public static void glVertexAttrib4f(uint index, float x, float y, float z, float w)
 		{
 			_glVertexAttrib4f(index, x, y, z, w);
@@ -2209,6 +2343,14 @@ namespace GLESDotNet
 			_glVertexAttrib4fv(index, v);
 		}
 
+		public static void glVertexAttrib4fv(uint index, ref float v)
+		{
+			fixed (float* vPtr = &v)
+			{
+				_glVertexAttrib4fv(index, vPtr);
+			}
+		}
+
 		public static void glVertexAttribPointer(uint index, int size, uint type, bool normalized, int stride, void* pointer)
 		{
 			_glVertexAttribPointer(index, size, type, normalized, stride, pointer);
@@ -2217,6 +2359,36 @@ namespace GLESDotNet
 		public static void glVertexAttribPointer(uint index, int size, uint type, bool normalized, int stride, IntPtr pointer)
 		{
 			_glVertexAttribPointer(index, size, type, normalized, stride, (void*)pointer);
+		}
+
+		public static void glVertexAttribPointer<T>(uint index, int size, uint type, bool normalized, int stride, T[] pointer)
+			where T: struct
+		{
+			var pointerPtr = GCHandle.Alloc(pointer, GCHandleType.Pinned);
+
+			try
+			{
+				_glVertexAttribPointer(index, size, type, normalized, stride, (void*)pointerPtr.AddrOfPinnedObject());
+			}
+			finally
+			{
+				pointerPtr.Free();
+			}
+		}
+
+		public static void glVertexAttribPointer<T>(uint index, int size, uint type, bool normalized, int stride, ref T pointer)
+			where T: struct
+		{
+			var pointerPtr = GCHandle.Alloc(pointer, GCHandleType.Pinned);
+
+			try
+			{
+				_glVertexAttribPointer(index, size, type, normalized, stride, (void*)pointerPtr.AddrOfPinnedObject());
+			}
+			finally
+			{
+				pointerPtr.Free();
+			}
 		}
 
 		public static void glViewport(int x, int y, int width, int height)
