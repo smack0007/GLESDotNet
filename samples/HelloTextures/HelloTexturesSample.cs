@@ -23,61 +23,6 @@ namespace HelloTextures
         {
         }
 
-        private static uint CompileShader(string shaderSrc, uint type)
-        {
-            var shader = glCreateShader(type);
-
-            if (shader == 0)
-                return 0;
-
-            var shaderSrcTmp = new string[] { shaderSrc };
-            var shaderLength = shaderSrc.Length;
-            glShaderSource(shader, 1, shaderSrcTmp, &shaderLength);
-
-            glCompileShader(shader);
-
-            int compiled;
-            glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-
-            if (compiled == 0)
-            {
-                int infoLength;
-                glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLength);
-
-                if (infoLength > 1)
-                {
-                    var infoLog = new StringBuilder(infoLength);
-                    glGetShaderInfoLog(shader, infoLength, null, infoLog);
-                    glDeleteShader(shader);
-                    throw new InvalidOperationException($"Error compiling shader:\n{infoLog}");
-                }
-            }
-
-            return shader;
-        }
-
-        private static void LinkProgram(uint program)
-        {
-            glLinkProgram(program);
-
-            int linked;
-            glGetProgramiv(program, GL_LINK_STATUS, &linked);
-
-            if (linked == 0)
-            {
-                int infoLength;
-                glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLength);
-
-                if (infoLength > 1)
-                {
-                    var infoLog = new StringBuilder(infoLength);
-                    glGetProgramInfoLog(program, infoLength, null, infoLog);
-                    glDeleteProgram(program);
-                    throw new InvalidOperationException($"Error linking program:\n{infoLog}");
-                }
-            }
-        }
-
         protected override void Initialize()
         {
             string vertShader =
@@ -108,8 +53,8 @@ void main()
     gl_FragColor = texture2D(fragTexture, fragTexCoord);
 }";
 
-            uint vertexShader = CompileShader(vertShader, GL_VERTEX_SHADER);
-            uint fragmentShader = CompileShader(fragShader, GL_FRAGMENT_SHADER);
+            uint vertexShader = GLUtils.CompileShader(vertShader, GL_VERTEX_SHADER);
+            uint fragmentShader = GLUtils.CompileShader(fragShader, GL_FRAGMENT_SHADER);
 
             _program = glCreateProgram();
             if (_program == 0)
@@ -121,7 +66,7 @@ void main()
             glBindAttribLocation(_program, 0, "vertPosition");
             glBindAttribLocation(_program, 1, "vertColor");
             glBindAttribLocation(_program, 2, "vertTexCoord");
-            LinkProgram(_program);
+            GLUtils.LinkProgram(_program);
 
             _fragTextureLocation = glGetUniformLocation(_program, "fragTexture");
 
