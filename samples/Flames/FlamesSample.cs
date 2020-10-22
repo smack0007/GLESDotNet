@@ -1,12 +1,11 @@
 ﻿using System;
 using static GLESDotNet.GLES2;
-using System.Text;
 using GLESDotNet.Samples;
 using ImageDotNet;
 
 namespace Flames
 {
-    public unsafe class FlamesSample : Sample
+    public class FlamesSample : Sample
     {
         private static readonly uint[] _fireColors = new uint[] {
             0x00000000,
@@ -76,61 +75,6 @@ namespace Flames
             _firePixels = new uint[_fireWidth * _fireHeight];
 
             _random = new Random();
-        }
-
-        private static uint CompileShader(string shaderSrc, uint type)
-        {
-            var shader = glCreateShader(type);
-
-            if (shader == 0)
-                return 0;
-
-            var shaderSrcTmp = new string[] { shaderSrc };
-            var shaderLength = shaderSrc.Length;
-            glShaderSource(shader, 1, shaderSrcTmp, &shaderLength);
-
-            glCompileShader(shader);
-
-            int compiled;
-            glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-
-            if (compiled == 0)
-            {
-                int infoLength;
-                glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLength);
-
-                if (infoLength > 1)
-                {
-                    var infoLog = new StringBuilder(infoLength);
-                    glGetShaderInfoLog(shader, infoLength, null, infoLog);
-                    glDeleteShader(shader);
-                    throw new InvalidOperationException($"Error compiling shader:\n{infoLog}");
-                }
-            }
-
-            return shader;
-        }
-
-        private static void LinkProgram(uint program)
-        {
-            glLinkProgram(program);
-
-            int linked;
-            glGetProgramiv(program, GL_LINK_STATUS, &linked);
-
-            if (linked == 0)
-            {
-                int infoLength;
-                glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLength);
-
-                if (infoLength > 1)
-                {
-                    var infoLog = new StringBuilder(infoLength);
-                    glGetProgramInfoLog(program, infoLength, null, infoLog);
-                    glDeleteProgram(program);
-                    throw new InvalidOperationException($"Error linking program:\n{infoLog}");
-                }
-            }
         }
 
         private int GetFireColorIndex(uint pixel)
@@ -207,8 +151,8 @@ void main()
     gl_FragColor = texture2D(fragTexture, fragTexCoord);
 }";
 
-            uint vertexShader = CompileShader(vertShader, GL_VERTEX_SHADER);
-            uint fragmentShader = CompileShader(fragShader, GL_FRAGMENT_SHADER);
+            uint vertexShader = GLUtils.CompileShader(vertShader, GL_VERTEX_SHADER);
+            uint fragmentShader = GLUtils.CompileShader(fragShader, GL_FRAGMENT_SHADER);
 
             _program = glCreateProgram();
             if (_program == 0)
@@ -219,16 +163,13 @@ void main()
 
             glBindAttribLocation(_program, 0, "vertPosition");
             glBindAttribLocation(_program, 1, "vertTexCoord");
-            LinkProgram(_program);
+            GLUtils.LinkProgram(_program);
 
             _vertTransformLocation = glGetUniformLocation(_program, "vertTransform");
             _fragTextureLocation = glGetUniformLocation(_program, "fragTexture");
 
             uint[] textures = new uint[2];
-            fixed (uint* texturesPtr = textures)
-            {
-                glGenTextures(2, texturesPtr);
-            }
+            glGenTextures(2, out textures[0]);
 
             _backgroundTexture = textures[0];
             _fireTexture = textures[1];
@@ -241,14 +182,14 @@ void main()
             _backgroundHeight = image.Height;
             using (var data = image.GetDataPointer())
             {
-                glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA, image.Width, image.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void*)data.Pointer);
+                glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA, image.Width, image.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.Pointer);
             }
                         
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)GL_LINEAR);
 
             glBindTexture(GL_TEXTURE_2D, _fireTexture);
-            glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA, _fireWidth - _firePadding, _fireHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, null);
+            glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA, _fireWidth - _firePadding, _fireHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, IntPtr.Zero);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)GL_LINEAR);
 
@@ -289,11 +230,7 @@ void main()
         protected override void Draw()
         {
             int[] viewport = new int[4];
-
-            fixed (int* viewportPtr = viewport)
-            {
-                glGetIntegerv(GL_VIEWPORT, viewportPtr);
-            }
+            glGetIntegerv(GL_VIEWPORT, out viewport[0]);
 
             float m11 = 2f / viewport[2];
             float m22 = -2f / viewport[3];
@@ -331,20 +268,9 @@ void main()
 
             glUseProgram(_program);
 
-            fixed (void* vertPositionsPtr = vertPositions)
-            {
-                glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, vertPositionsPtr);
-            }
-
-            fixed (void* vertTexCoordsPtr = vertTexCoords)
-            {
-                glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, vertTexCoordsPtr);
-            }
-
-            fixed (float* transformPtr = transform)
-            {
-                glUniformMatrix4fv(_vertTransformLocation, 1, false, transformPtr);
-            }
+            glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, vertPositions);
+            glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, vertTexCoords);
+            glUniformMatrix4fv(_vertTransformLocation, 1, false, ref transform[0]);
 
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, _backgroundTexture);            
@@ -352,19 +278,25 @@ void main()
             glDrawArrays(GL_TRIANGLES, 0, 6);
 
             glBindTexture(GL_TEXTURE_2D, _fireTexture);
-            fixed (uint* flamePixelsPtr = _firePixels)
+
+            for (int y = 0; y < _fireHeight; y++)
             {
-                for (int y = 0; y < _fireHeight; y++)
-                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, y, _fireWidth - _firePadding, 1, GL_RGBA, GL_UNSIGNED_BYTE, &flamePixelsPtr[y * _fireWidth + (_firePadding / 2)]);
+                glTexSubImage2D(
+                    GL_TEXTURE_2D,
+                    0,
+                    0,
+                    y,
+                    _fireWidth - _firePadding,
+                    1,
+                    GL_RGBA,
+                    GL_UNSIGNED_BYTE,
+                    ref _firePixels[y * _fireWidth + (_firePadding / 2)]);
             }
+
             glUniform1i(_fragTextureLocation, 0);
 
             vertPositions = GenerateVertPositions(0, 0, WindowWidth, WindowHeight);
-
-            fixed (void* vertPositionsPtr = vertPositions)
-            {
-                glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, vertPositionsPtr);
-            }
+            glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, vertPositions);
 
             glDrawArrays(GL_TRIANGLES, 0, 6);
         }

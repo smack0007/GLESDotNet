@@ -1271,32 +1271,20 @@ namespace GLESDotNet
 		}
 
 		public static void glBufferData<T>(uint target, int size, T[] data, uint usage)
-			where T: struct
+			where T: unmanaged
 		{
-			var dataPtr = GCHandle.Alloc(data, GCHandleType.Pinned);
-
-			try
+			fixed (void* dataPtr = data)
 			{
-				_glBufferData(target, size, (void*)dataPtr.AddrOfPinnedObject(), usage);
-			}
-			finally
-			{
-				dataPtr.Free();
+				_glBufferData(target, size, dataPtr, usage);
 			}
 		}
 
 		public static void glBufferData<T>(uint target, int size, ref T data, uint usage)
-			where T: struct
+			where T: unmanaged
 		{
-			var dataPtr = GCHandle.Alloc(data, GCHandleType.Pinned);
-
-			try
+			fixed (void* dataPtr = &data)
 			{
-				_glBufferData(target, size, (void*)dataPtr.AddrOfPinnedObject(), usage);
-			}
-			finally
-			{
-				dataPtr.Free();
+				_glBufferData(target, size, dataPtr, usage);
 			}
 		}
 
@@ -1311,32 +1299,20 @@ namespace GLESDotNet
 		}
 
 		public static void glBufferSubData<T>(uint target, int offset, int size, T[] data)
-			where T: struct
+			where T: unmanaged
 		{
-			var dataPtr = GCHandle.Alloc(data, GCHandleType.Pinned);
-
-			try
+			fixed (void* dataPtr = data)
 			{
-				_glBufferSubData(target, offset, size, (void*)dataPtr.AddrOfPinnedObject());
-			}
-			finally
-			{
-				dataPtr.Free();
+				_glBufferSubData(target, offset, size, dataPtr);
 			}
 		}
 
 		public static void glBufferSubData<T>(uint target, int offset, int size, ref T data)
-			where T: struct
+			where T: unmanaged
 		{
-			var dataPtr = GCHandle.Alloc(data, GCHandleType.Pinned);
-
-			try
+			fixed (void* dataPtr = &data)
 			{
-				_glBufferSubData(target, offset, size, (void*)dataPtr.AddrOfPinnedObject());
-			}
-			finally
-			{
-				dataPtr.Free();
+				_glBufferSubData(target, offset, size, dataPtr);
 			}
 		}
 
@@ -1496,32 +1472,20 @@ namespace GLESDotNet
 		}
 
 		public static void glDrawElements<T>(uint mode, int count, uint type, T[] indices)
-			where T: struct
+			where T: unmanaged
 		{
-			var indicesPtr = GCHandle.Alloc(indices, GCHandleType.Pinned);
-
-			try
+			fixed (void* indicesPtr = indices)
 			{
-				_glDrawElements(mode, count, type, (void*)indicesPtr.AddrOfPinnedObject());
-			}
-			finally
-			{
-				indicesPtr.Free();
+				_glDrawElements(mode, count, type, indicesPtr);
 			}
 		}
 
 		public static void glDrawElements<T>(uint mode, int count, uint type, ref T indices)
-			where T: struct
+			where T: unmanaged
 		{
-			var indicesPtr = GCHandle.Alloc(indices, GCHandleType.Pinned);
-
-			try
+			fixed (void* indicesPtr = &indices)
 			{
-				_glDrawElements(mode, count, type, (void*)indicesPtr.AddrOfPinnedObject());
-			}
-			finally
-			{
-				indicesPtr.Free();
+				_glDrawElements(mode, count, type, indicesPtr);
 			}
 		}
 
@@ -2027,32 +1991,20 @@ namespace GLESDotNet
 		}
 
 		public static void glTexImage2D<T>(uint target, int level, int internalformat, int width, int height, int border, uint format, uint type, T[] pixels)
-			where T: struct
+			where T: unmanaged
 		{
-			var pixelsPtr = GCHandle.Alloc(pixels, GCHandleType.Pinned);
-
-			try
+			fixed (void* pixelsPtr = pixels)
 			{
-				_glTexImage2D(target, level, internalformat, width, height, border, format, type, (void*)pixelsPtr.AddrOfPinnedObject());
-			}
-			finally
-			{
-				pixelsPtr.Free();
+				_glTexImage2D(target, level, internalformat, width, height, border, format, type, pixelsPtr);
 			}
 		}
 
 		public static void glTexImage2D<T>(uint target, int level, int internalformat, int width, int height, int border, uint format, uint type, ref T pixels)
-			where T: struct
+			where T: unmanaged
 		{
-			var pixelsPtr = GCHandle.Alloc(pixels, GCHandleType.Pinned);
-
-			try
+			fixed (void* pixelsPtr = &pixels)
 			{
-				_glTexImage2D(target, level, internalformat, width, height, border, format, type, (void*)pixelsPtr.AddrOfPinnedObject());
-			}
-			finally
-			{
-				pixelsPtr.Free();
+				_glTexImage2D(target, level, internalformat, width, height, border, format, type, pixelsPtr);
 			}
 		}
 
@@ -2084,6 +2036,24 @@ namespace GLESDotNet
 		public static void glTexSubImage2D(uint target, int level, int xoffset, int yoffset, int width, int height, uint format, uint type, IntPtr pixels)
 		{
 			_glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, (void*)pixels);
+		}
+
+		public static void glTexSubImage2D<T>(uint target, int level, int xoffset, int yoffset, int width, int height, uint format, uint type, T[] pixels)
+			where T: unmanaged
+		{
+			fixed (void* pixelsPtr = pixels)
+			{
+				_glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixelsPtr);
+			}
+		}
+
+		public static void glTexSubImage2D<T>(uint target, int level, int xoffset, int yoffset, int width, int height, uint format, uint type, ref T pixels)
+			where T: unmanaged
+		{
+			fixed (void* pixelsPtr = &pixels)
+			{
+				_glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixelsPtr);
+			}
 		}
 
 		public static void glUniform1f(int location, float v0)
@@ -2362,32 +2332,20 @@ namespace GLESDotNet
 		}
 
 		public static void glVertexAttribPointer<T>(uint index, int size, uint type, bool normalized, int stride, T[] pointer)
-			where T: struct
+			where T: unmanaged
 		{
-			var pointerPtr = GCHandle.Alloc(pointer, GCHandleType.Pinned);
-
-			try
+			fixed (void* pointerPtr = pointer)
 			{
-				_glVertexAttribPointer(index, size, type, normalized, stride, (void*)pointerPtr.AddrOfPinnedObject());
-			}
-			finally
-			{
-				pointerPtr.Free();
+				_glVertexAttribPointer(index, size, type, normalized, stride, pointerPtr);
 			}
 		}
 
 		public static void glVertexAttribPointer<T>(uint index, int size, uint type, bool normalized, int stride, ref T pointer)
-			where T: struct
+			where T: unmanaged
 		{
-			var pointerPtr = GCHandle.Alloc(pointer, GCHandleType.Pinned);
-
-			try
+			fixed (void* pointerPtr = &pointer)
 			{
-				_glVertexAttribPointer(index, size, type, normalized, stride, (void*)pointerPtr.AddrOfPinnedObject());
-			}
-			finally
-			{
-				pointerPtr.Free();
+				_glVertexAttribPointer(index, size, type, normalized, stride, pointerPtr);
 			}
 		}
 
