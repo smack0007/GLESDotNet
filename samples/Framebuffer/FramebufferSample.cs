@@ -6,18 +6,18 @@ using ImageDotNet;
 
 namespace Framebuffer
 {
-    public unsafe class FramebufferSample : Sample
+    public class FramebufferSample : Sample
     {
-        private static uint _program;
-        private static int _fragTextureLocation;
-        private static uint _texture;
-        private static uint _screenProgram;
-        private static int _screenFragTextureLocation;
-        private static int _screenFragTimeLocation;
-        private static uint _framebuffer;
-        private static uint _framebufferTexture;
+        private uint _program;
+        private int _fragTextureLocation;
+        private uint _texture;
+        private uint _screenProgram;
+        private int _screenFragTextureLocation;
+        private int _screenFragTimeLocation;
+        private uint _framebuffer;
+        private uint _framebufferTexture;
 
-        private static float _totalElapsedTime;
+        private float _totalElapsedTime;
 
         public static void Main(string[] args)
         {
@@ -28,61 +28,6 @@ namespace Framebuffer
         public FramebufferSample()
             : base("Framebuffer")
         {
-        }
-
-        private static uint CompileShader(string shaderSrc, uint type)
-        {
-            var shader = glCreateShader(type);
-
-            if (shader == 0)
-                return 0;
-
-            var shaderSrcTmp = new string[] { shaderSrc };
-            var shaderLength = shaderSrc.Length;
-            glShaderSource(shader, 1, shaderSrcTmp, &shaderLength);
-
-            glCompileShader(shader);
-
-            int compiled;
-            glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-
-            if (compiled == 0)
-            {
-                int infoLength;
-                glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLength);
-
-                if (infoLength > 1)
-                {
-                    var infoLog = new StringBuilder(infoLength);
-                    glGetShaderInfoLog(shader, infoLength, null, infoLog);
-                    glDeleteShader(shader);
-                    throw new InvalidOperationException($"Error compiling shader:\n{infoLog}");
-                }
-            }
-
-            return shader;
-        }
-
-        private static void LinkProgram(uint program)
-        {
-            glLinkProgram(program);
-
-            int linked;
-            glGetProgramiv(program, GL_LINK_STATUS, &linked);
-
-            if (linked == 0)
-            {
-                int infoLength;
-                glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLength);
-
-                if (infoLength > 1)
-                {
-                    var infoLog = new StringBuilder(infoLength);
-                    glGetProgramInfoLog(program, infoLength, null, infoLog);
-                    glDeleteProgram(program);
-                    throw new InvalidOperationException($"Error linking program:\n{infoLog}");
-                }
-            }
         }
 
         protected override void Initialize()
@@ -129,9 +74,9 @@ void main()
 	gl_FragColor = texture2D(fragTexture, fragTexCoord + 0.005 * vec2(sin(fragTime + 1024.0 * fragTexCoord.x), cos(fragTime + 768.0 * fragTexCoord.y)));
 }";
 
-            uint vertexShader = CompileShader(vertShader, GL_VERTEX_SHADER);
-            uint fragmentShader = CompileShader(fragShader, GL_FRAGMENT_SHADER);
-            uint screenFragmentShader = CompileShader(screenFragShader, GL_FRAGMENT_SHADER);
+            uint vertexShader = GLUtils.CompileShader(vertShader, GL_VERTEX_SHADER);
+            uint fragmentShader = GLUtils.CompileShader(fragShader, GL_FRAGMENT_SHADER);
+            uint screenFragmentShader = GLUtils.CompileShader(screenFragShader, GL_FRAGMENT_SHADER);
 
             _program = glCreateProgram();
             if (_program == 0)
@@ -143,7 +88,7 @@ void main()
             glBindAttribLocation(_program, 0, "vertPosition");
             glBindAttribLocation(_program, 1, "vertColor");
             glBindAttribLocation(_program, 2, "vertTexCoord");
-            LinkProgram(_program);
+            GLUtils.LinkProgram(_program);
 
             _fragTextureLocation = glGetUniformLocation(_program, "fragTexture");
 
@@ -157,14 +102,12 @@ void main()
             glBindAttribLocation(_screenProgram, 0, "vertPosition");
             glBindAttribLocation(_screenProgram, 1, "vertColor");
             glBindAttribLocation(_screenProgram, 2, "vertTexCoord");
-            LinkProgram(_screenProgram);
+            GLUtils.LinkProgram(_screenProgram);
 
             _screenFragTextureLocation = glGetUniformLocation(_screenProgram, "fragTexture");
             _screenFragTimeLocation = glGetUniformLocation(_screenProgram, "fragTime");
 
-            uint texture;
-            glGenTextures(1, &texture);
-            _texture = texture;
+            glGenTextures(1, out _texture);
 
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, _texture);
@@ -173,25 +116,21 @@ void main()
             var image = Image.LoadTga("Box.tga").To<Rgb24>();
             using (var data = image.GetDataPointer())
             {
-                glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGB, image.Width, image.Height, 0, GL_RGB, GL_UNSIGNED_BYTE, (void*)data.Pointer);
+                glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGB, image.Width, image.Height, 0, GL_RGB, GL_UNSIGNED_BYTE, data.Pointer);
             }
 
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)GL_LINEAR);
 
-            uint framebuffer;
-            glGenFramebuffers(1, &framebuffer);
-            _framebuffer = framebuffer;
+            glGenFramebuffers(1, out _framebuffer);
             
             glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
 
-            uint framebufferTexture;
-            glGenTextures(1, &framebufferTexture);
-            _framebufferTexture = framebufferTexture;
+            glGenTextures(1, out _framebufferTexture);            
 
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, _framebufferTexture);
-            glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA, 1024, 768, 0, GL_RGBA, GL_UNSIGNED_BYTE, null);
+            glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA, 1024, 768, 0, GL_RGBA, GL_UNSIGNED_BYTE, IntPtr.Zero);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)GL_NEAREST);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _framebufferTexture, 0);
@@ -290,20 +229,9 @@ void main()
             glViewport(0, 0, 1024, 768);
             glClear(GL_COLOR_BUFFER_BIT);            
 
-            fixed (void* vertPositionsPtr = vertPositions)
-            {
-                glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, vertPositionsPtr);
-            }
-
-            fixed (void* vertColorsPtr = vertColors)
-            {
-                glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, vertColorsPtr);
-            }
-
-            fixed (void* vertTexCoordsPtr = vertTexCoords)
-            {
-                glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, vertTexCoordsPtr);
-            }
+            glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, vertPositions);
+            glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, vertColors);
+            glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, vertTexCoords);
 
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, _texture);
@@ -319,20 +247,9 @@ void main()
             glViewport(0, 0, WindowWidth, WindowHeight);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            fixed (void* screenVertPositionsPtr = screenVertPositions)
-            {
-                glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, screenVertPositionsPtr);
-            }
-
-            fixed (void* screenVertColorsPtr = screenVertColors)
-            {
-                glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, screenVertColorsPtr);
-            }
-
-            fixed (void* screenVertTexCoordsPtr = screenVertTexCoords)
-            {
-                glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, screenVertTexCoordsPtr);
-            }            
+            glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, screenVertPositions);
+            glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, screenVertColors);
+            glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, screenVertTexCoords);
 
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, _framebufferTexture);
