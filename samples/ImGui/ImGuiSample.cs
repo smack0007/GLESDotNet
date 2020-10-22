@@ -1,12 +1,9 @@
 ﻿using System;
 using static GLESDotNet.GLES2;
 using static GLFWDotNet.GLFW;
-using System.Text;
 using GLESDotNet.Samples;
-using ImageDotNet;
 using ImGuiNET;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using System.Collections.Generic;
 
 namespace ImGuiGLESDotNet
