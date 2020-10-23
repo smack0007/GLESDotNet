@@ -198,18 +198,7 @@ void main()
                 new Vector3(position.X, position.Y + size.Y, 0.0f),
             };
 
-            unsafe
-            {
-                fixed (Vector3* srcPtr = spriteVertPositions)
-                fixed (Vector3* destPtr = _vertPositions)
-                {
-                    Buffer.MemoryCopy(
-                        srcPtr,
-                        destPtr + (_spriteCount * VertsPerSprite),
-                        VertsPerSprite * sizeof(Vector3),
-                        VertsPerSprite * sizeof(Vector3));
-                }
-            }
+            Array.Copy(spriteVertPositions, 0, _vertPositions, _spriteCount * VertsPerSprite, spriteVertPositions.Length);
 
             var spriteVertColors = new Vector4[]
             {
@@ -222,18 +211,7 @@ void main()
                 tint,
             };
 
-            unsafe
-            {
-                fixed (Vector4* srcPtr = spriteVertColors)
-                fixed (Vector4* destPtr = _vertColors)
-                {
-                    Buffer.MemoryCopy(
-                        srcPtr,
-                        destPtr + (_spriteCount * VertsPerSprite),
-                        VertsPerSprite * sizeof(Vector4),
-                        VertsPerSprite * sizeof(Vector4));
-                }
-            }
+            Array.Copy(spriteVertColors, 0, _vertColors, _spriteCount * VertsPerSprite, spriteVertColors.Length);
 
             var spriteVertTexCoords = new Vector2[]
             {
@@ -246,18 +224,7 @@ void main()
                 new Vector2(srcX / (float)texture.Width, (srcY + srcHeight) / (float)texture.Height),
             };
 
-            unsafe
-            {
-                fixed (Vector2* srcPtr = spriteVertTexCoords)
-                fixed (Vector2* destPtr = _vertTexCoords)
-                {
-                    Buffer.MemoryCopy(
-                        srcPtr,
-                        destPtr + (_spriteCount * VertsPerSprite),
-                        VertsPerSprite * sizeof(Vector2),
-                        VertsPerSprite * sizeof(Vector2));
-                }
-            }
+            Array.Copy(spriteVertTexCoords, 0, _vertTexCoords, _spriteCount * VertsPerSprite, spriteVertTexCoords.Length);
 
             _spriteCount++;
         }
