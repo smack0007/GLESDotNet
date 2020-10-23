@@ -1401,9 +1401,41 @@ namespace GLESDotNet
 			_glDeleteBuffers(n, buffers);
 		}
 
+		public static void glDeleteBuffers(int n, uint[] buffers)
+		{
+			fixed (uint* buffersPtr = buffers)
+			{
+				_glDeleteBuffers(n, buffersPtr);
+			}
+		}
+
+		public static void glDeleteBuffers(int n, ref uint buffers)
+		{
+			fixed (uint* buffersPtr = &buffers)
+			{
+				_glDeleteBuffers(n, buffersPtr);
+			}
+		}
+
 		public static void glDeleteFramebuffers(int n, uint* framebuffers)
 		{
 			_glDeleteFramebuffers(n, framebuffers);
+		}
+
+		public static void glDeleteFramebuffers(int n, uint[] framebuffers)
+		{
+			fixed (uint* framebuffersPtr = framebuffers)
+			{
+				_glDeleteFramebuffers(n, framebuffersPtr);
+			}
+		}
+
+		public static void glDeleteFramebuffers(int n, ref uint framebuffers)
+		{
+			fixed (uint* framebuffersPtr = &framebuffers)
+			{
+				_glDeleteFramebuffers(n, framebuffersPtr);
+			}
 		}
 
 		public static void glDeleteProgram(uint program)
@@ -1416,6 +1448,22 @@ namespace GLESDotNet
 			_glDeleteRenderbuffers(n, renderbuffers);
 		}
 
+		public static void glDeleteRenderbuffers(int n, uint[] renderbuffers)
+		{
+			fixed (uint* renderbuffersPtr = renderbuffers)
+			{
+				_glDeleteRenderbuffers(n, renderbuffersPtr);
+			}
+		}
+
+		public static void glDeleteRenderbuffers(int n, ref uint renderbuffers)
+		{
+			fixed (uint* renderbuffersPtr = &renderbuffers)
+			{
+				_glDeleteRenderbuffers(n, renderbuffersPtr);
+			}
+		}
+
 		public static void glDeleteShader(uint shader)
 		{
 			_glDeleteShader(shader);
@@ -1424,6 +1472,22 @@ namespace GLESDotNet
 		public static void glDeleteTextures(int n, uint* textures)
 		{
 			_glDeleteTextures(n, textures);
+		}
+
+		public static void glDeleteTextures(int n, uint[] textures)
+		{
+			fixed (uint* texturesPtr = textures)
+			{
+				_glDeleteTextures(n, texturesPtr);
+			}
+		}
+
+		public static void glDeleteTextures(int n, ref uint textures)
+		{
+			fixed (uint* texturesPtr = &textures)
+			{
+				_glDeleteTextures(n, texturesPtr);
+			}
 		}
 
 		public static void glDepthFunc(uint func)
@@ -1529,6 +1593,14 @@ namespace GLESDotNet
 			_glGenBuffers(n, buffers);
 		}
 
+		public static void glGenBuffers(int n, uint[] buffers)
+		{
+			fixed (uint* buffersPtr = buffers)
+			{
+				_glGenBuffers(n, buffersPtr);
+			}
+		}
+
 		public static void glGenBuffers(int n, out uint buffers)
 		{
 			fixed (uint* buffersPtr = &buffers)
@@ -1547,6 +1619,14 @@ namespace GLESDotNet
 			_glGenFramebuffers(n, framebuffers);
 		}
 
+		public static void glGenFramebuffers(int n, uint[] framebuffers)
+		{
+			fixed (uint* framebuffersPtr = framebuffers)
+			{
+				_glGenFramebuffers(n, framebuffersPtr);
+			}
+		}
+
 		public static void glGenFramebuffers(int n, out uint framebuffers)
 		{
 			fixed (uint* framebuffersPtr = &framebuffers)
@@ -1560,6 +1640,14 @@ namespace GLESDotNet
 			_glGenRenderbuffers(n, renderbuffers);
 		}
 
+		public static void glGenRenderbuffers(int n, uint[] renderbuffers)
+		{
+			fixed (uint* renderbuffersPtr = renderbuffers)
+			{
+				_glGenRenderbuffers(n, renderbuffersPtr);
+			}
+		}
+
 		public static void glGenRenderbuffers(int n, out uint renderbuffers)
 		{
 			fixed (uint* renderbuffersPtr = &renderbuffers)
@@ -1571,6 +1659,14 @@ namespace GLESDotNet
 		public static void glGenTextures(int n, uint* textures)
 		{
 			_glGenTextures(n, textures);
+		}
+
+		public static void glGenTextures(int n, uint[] textures)
+		{
+			fixed (uint* texturesPtr = textures)
+			{
+				_glGenTextures(n, texturesPtr);
+			}
 		}
 
 		public static void glGenTextures(int n, out uint textures)
@@ -2066,6 +2162,14 @@ namespace GLESDotNet
 			_glUniform1fv(location, count, value);
 		}
 
+		public static void glUniform1fv(int location, int count, float[] value)
+		{
+			fixed (float* valuePtr = value)
+			{
+				_glUniform1fv(location, count, valuePtr);
+			}
+		}
+
 		public static void glUniform1fv(int location, int count, ref float value)
 		{
 			fixed (float* valuePtr = &value)
@@ -2082,6 +2186,14 @@ namespace GLESDotNet
 		public static void glUniform1iv(int location, int count, int* value)
 		{
 			_glUniform1iv(location, count, value);
+		}
+
+		public static void glUniform1iv(int location, int count, int[] value)
+		{
+			fixed (int* valuePtr = value)
+			{
+				_glUniform1iv(location, count, valuePtr);
+			}
 		}
 
 		public static void glUniform1iv(int location, int count, ref int value)
@@ -2102,6 +2214,14 @@ namespace GLESDotNet
 			_glUniform2fv(location, count, value);
 		}
 
+		public static void glUniform2fv(int location, int count, float[] value)
+		{
+			fixed (float* valuePtr = value)
+			{
+				_glUniform2fv(location, count, valuePtr);
+			}
+		}
+
 		public static void glUniform2fv(int location, int count, ref float value)
 		{
 			fixed (float* valuePtr = &value)
@@ -2118,6 +2238,14 @@ namespace GLESDotNet
 		public static void glUniform2iv(int location, int count, int* value)
 		{
 			_glUniform2iv(location, count, value);
+		}
+
+		public static void glUniform2iv(int location, int count, int[] value)
+		{
+			fixed (int* valuePtr = value)
+			{
+				_glUniform2iv(location, count, valuePtr);
+			}
 		}
 
 		public static void glUniform2iv(int location, int count, ref int value)
@@ -2138,6 +2266,14 @@ namespace GLESDotNet
 			_glUniform3fv(location, count, value);
 		}
 
+		public static void glUniform3fv(int location, int count, float[] value)
+		{
+			fixed (float* valuePtr = value)
+			{
+				_glUniform3fv(location, count, valuePtr);
+			}
+		}
+
 		public static void glUniform3fv(int location, int count, ref float value)
 		{
 			fixed (float* valuePtr = &value)
@@ -2154,6 +2290,14 @@ namespace GLESDotNet
 		public static void glUniform3iv(int location, int count, int* value)
 		{
 			_glUniform3iv(location, count, value);
+		}
+
+		public static void glUniform3iv(int location, int count, int[] value)
+		{
+			fixed (int* valuePtr = value)
+			{
+				_glUniform3iv(location, count, valuePtr);
+			}
 		}
 
 		public static void glUniform3iv(int location, int count, ref int value)
@@ -2174,6 +2318,14 @@ namespace GLESDotNet
 			_glUniform4fv(location, count, value);
 		}
 
+		public static void glUniform4fv(int location, int count, float[] value)
+		{
+			fixed (float* valuePtr = value)
+			{
+				_glUniform4fv(location, count, valuePtr);
+			}
+		}
+
 		public static void glUniform4fv(int location, int count, ref float value)
 		{
 			fixed (float* valuePtr = &value)
@@ -2192,6 +2344,14 @@ namespace GLESDotNet
 			_glUniform4iv(location, count, value);
 		}
 
+		public static void glUniform4iv(int location, int count, int[] value)
+		{
+			fixed (int* valuePtr = value)
+			{
+				_glUniform4iv(location, count, valuePtr);
+			}
+		}
+
 		public static void glUniform4iv(int location, int count, ref int value)
 		{
 			fixed (int* valuePtr = &value)
@@ -2203,6 +2363,14 @@ namespace GLESDotNet
 		public static void glUniformMatrix2fv(int location, int count, bool transpose, float* value)
 		{
 			_glUniformMatrix2fv(location, count, transpose, value);
+		}
+
+		public static void glUniformMatrix2fv(int location, int count, bool transpose, float[] value)
+		{
+			fixed (float* valuePtr = value)
+			{
+				_glUniformMatrix2fv(location, count, transpose, valuePtr);
+			}
 		}
 
 		public static void glUniformMatrix2fv(int location, int count, bool transpose, ref float value)
@@ -2218,6 +2386,14 @@ namespace GLESDotNet
 			_glUniformMatrix3fv(location, count, transpose, value);
 		}
 
+		public static void glUniformMatrix3fv(int location, int count, bool transpose, float[] value)
+		{
+			fixed (float* valuePtr = value)
+			{
+				_glUniformMatrix3fv(location, count, transpose, valuePtr);
+			}
+		}
+
 		public static void glUniformMatrix3fv(int location, int count, bool transpose, ref float value)
 		{
 			fixed (float* valuePtr = &value)
@@ -2229,6 +2405,14 @@ namespace GLESDotNet
 		public static void glUniformMatrix4fv(int location, int count, bool transpose, float* value)
 		{
 			_glUniformMatrix4fv(location, count, transpose, value);
+		}
+
+		public static void glUniformMatrix4fv(int location, int count, bool transpose, float[] value)
+		{
+			fixed (float* valuePtr = value)
+			{
+				_glUniformMatrix4fv(location, count, transpose, valuePtr);
+			}
 		}
 
 		public static void glUniformMatrix4fv(int location, int count, bool transpose, ref float value)

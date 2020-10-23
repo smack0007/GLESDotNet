@@ -315,7 +315,7 @@ void main()
                 -1.0f, 1.0f, 0.0f, 1.0f,
             };
 
-            glUniformMatrix4fv(_vertTransformLocation, 1, false, ref transform[0]);
+            glUniformMatrix4fv(_vertTransformLocation, 1, false, transform);
 
             glUniform1i(_fragTextureLocation, 0);
 

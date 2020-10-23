@@ -45,6 +45,8 @@ namespace GLGenerator
 
             public bool GenerateIntPtrOverload => Params.Any(x => x.Type == "void*");
 
+            public bool GenerateArrayOverload => Params.Any(x => x.UseForArrayOverload);
+
             public bool GenerateGenericOverload => Params.Any(x => x.UseForGenericOverload);
 
             public bool GenerateOutOverload => Params.Any(x => x.UseForOutOverload);
@@ -82,7 +84,9 @@ namespace GLGenerator
             public string Type { get; set; } = "";
 
             public string Name { get; set; } = "";
-            
+
+            public bool UseForArrayOverload { get; set; }
+
             public bool UseForGenericOverload { get; set; }
 
             public bool UseForRefOverload { get; set; }
@@ -133,9 +137,18 @@ namespace GLGenerator
             glVertexAttribPointer.Params.Single(x => x.Name == "pointer").UseForGenericOverload = true;
 
             foreach (var function in functions.Where(x =>
+                x.Name.StartsWith("glDelete") &&
+                x.Params.Last().Type == "GLuint*"))
+            {
+                function.Params.Last().UseForArrayOverload = true;
+                function.Params.Last().UseForRefOverload = true;
+            }
+
+            foreach (var function in functions.Where(x =>
                 x.Name.StartsWith("glGen") &&
                 x.Params.Last().Type == "GLuint*"))
             {
+                function.Params.Last().UseForArrayOverload = true;
                 function.Params.Last().UseForOutOverload = true;
             }
 
@@ -168,6 +181,7 @@ namespace GLGenerator
                 x.Name.EndsWith("v") &&
                 x.Params.Any(y => y.Name == "value")))
             {
+                function.Params.Single(x => x.Name == "value").UseForArrayOverload = true;
                 function.Params.Single(x => x.Name == "value").UseForRefOverload = true;
             }
 
@@ -458,6 +472,30 @@ namespace GLGenerator
 
                     sb.AppendLine($"_{function.Name}({parameterNames});");
 
+                    sb.AppendLine("\t\t}");
+                    sb.AppendLine();
+                }
+
+                if (function.GenerateArrayOverload)
+                {
+                    parameters = string.Join(", ", function.Params.Select(x => GetParamType(x).Replace("*", "[]") + " " + GetParamName(x.Name)));
+                    parameterNames = string.Join(", ", function.Params.Select(x => GetParamName(x.Name) + (x.UseForArrayOverload ? "Ptr" : "")));
+
+                    sb.AppendLine($"\t\tpublic static {returnType} {function.Name}({parameters})");
+                    sb.AppendLine("\t\t{");
+
+                    foreach (var param in function.Params.Where(x => x.UseForArrayOverload))
+                        sb.AppendLine($"\t\t\tfixed ({GetParamType(param)} {GetParamName(param.Name)}Ptr = {GetParamName(param.Name)})");
+
+                    sb.AppendLine("\t\t\t{");
+                    sb.Append("\t\t\t\t");
+
+                    if (returnType != "void")
+                        sb.Append("return ");
+
+                    sb.AppendLine($"_{function.Name}({parameterNames});");
+
+                    sb.AppendLine("\t\t\t}");
                     sb.AppendLine("\t\t}");
                     sb.AppendLine();
                 }
