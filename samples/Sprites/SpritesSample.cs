@@ -1,22 +1,11 @@
 ﻿using System;
 using static GLESDotNet.GLES2;
-using System.Text;
 using GLESDotNet.Samples;
 using ImageDotNet;
 using System.Numerics;
-using System.Globalization;
 
 namespace Sprites
 {
-    public struct TextureData
-    {
-        public uint Handle { get; set; }
-
-        public int Width { get; set; }
-
-        public int Height { get; set; }
-    }
-
     public struct SmileyData
     {
         public int SrcX { get; set; }
@@ -32,7 +21,7 @@ namespace Sprites
         public Vector4 Tint { get; set; }
     }
 
-    public unsafe class SpritesSample : Sample
+    public class SpritesSample : Sample
     {
         private uint _program;
         private int _vertTransformLocation;
@@ -64,65 +53,9 @@ namespace Sprites
         {
         }
 
-        private static uint CompileShader(string shaderSrc, uint type)
-        {
-            var shader = glCreateShader(type);
-
-            if (shader == 0)
-                return 0;
-
-            var shaderSrcTmp = new string[] { shaderSrc };
-            var shaderLength = shaderSrc.Length;
-            glShaderSource(shader, 1, shaderSrcTmp, &shaderLength);
-
-            glCompileShader(shader);
-
-            int compiled;
-            glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-
-            if (compiled == 0)
-            {
-                int infoLength;
-                glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLength);
-
-                if (infoLength > 1)
-                {
-                    var infoLog = new StringBuilder(infoLength);
-                    glGetShaderInfoLog(shader, infoLength, null, infoLog);
-                    glDeleteShader(shader);
-                    throw new InvalidOperationException($"Error compiling shader:\n{infoLog}");
-                }
-            }
-
-            return shader;
-        }
-
-        private static void LinkProgram(uint program)
-        {
-            glLinkProgram(program);
-
-            int linked;
-            glGetProgramiv(program, GL_LINK_STATUS, &linked);
-
-            if (linked == 0)
-            {
-                int infoLength;
-                glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLength);
-
-                if (infoLength > 1)
-                {
-                    var infoLog = new StringBuilder(infoLength);
-                    glGetProgramInfoLog(program, infoLength, null, infoLog);
-                    glDeleteProgram(program);
-                    throw new InvalidOperationException($"Error linking program:\n{infoLog}");
-                }
-            }
-        }
-
         private static TextureData LoadTexture(string fileName)
         {
-            uint handle;
-            glGenTextures(1, &handle);
+            glGenTextures(1, out uint handle);
 
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, handle);
@@ -171,8 +104,8 @@ void main()
     gl_FragColor = fragColor * texture2D(fragTexture, fragTexCoord);
 }";
 
-            uint vertexShader = CompileShader(vertShader, GL_VERTEX_SHADER);
-            uint fragmentShader = CompileShader(fragShader, GL_FRAGMENT_SHADER);
+            uint vertexShader = GLUtils.CompileShader(vertShader, GL_VERTEX_SHADER);
+            uint fragmentShader = GLUtils.CompileShader(fragShader, GL_FRAGMENT_SHADER);
 
             _program = glCreateProgram();
             if (_program == 0)
@@ -184,7 +117,7 @@ void main()
             glBindAttribLocation(_program, 0, "vertPosition");
             glBindAttribLocation(_program, 1, "vertColor");
             glBindAttribLocation(_program, 2, "vertTexCoord");
-            LinkProgram(_program);
+            GLUtils.LinkProgram(_program);
 
             _vertTransformLocation = glGetUniformLocation(_program, "vertTransform");
             _fragTextureLocation = glGetUniformLocation(_program, "fragTexture");
@@ -265,14 +198,17 @@ void main()
                 new Vector3(position.X, position.Y + size.Y, 0.0f),
             };
 
-            fixed (Vector3* srcPtr = spriteVertPositions)
-            fixed (Vector3* destPtr = _vertPositions)
+            unsafe
             {
-                Buffer.MemoryCopy(
-                    srcPtr,
-                    destPtr + (_spriteCount * VertsPerSprite),
-                    VertsPerSprite * sizeof(Vector3),
-                    VertsPerSprite * sizeof(Vector3));
+                fixed (Vector3* srcPtr = spriteVertPositions)
+                fixed (Vector3* destPtr = _vertPositions)
+                {
+                    Buffer.MemoryCopy(
+                        srcPtr,
+                        destPtr + (_spriteCount * VertsPerSprite),
+                        VertsPerSprite * sizeof(Vector3),
+                        VertsPerSprite * sizeof(Vector3));
+                }
             }
 
             var spriteVertColors = new Vector4[]
@@ -286,14 +222,17 @@ void main()
                 tint,
             };
 
-            fixed (Vector4* srcPtr = spriteVertColors)
-            fixed (Vector4* destPtr = _vertColors)
+            unsafe
             {
-                Buffer.MemoryCopy(
-                    srcPtr,
-                    destPtr + (_spriteCount * VertsPerSprite),
-                    VertsPerSprite * sizeof(Vector4),
-                    VertsPerSprite * sizeof(Vector4));
+                fixed (Vector4* srcPtr = spriteVertColors)
+                fixed (Vector4* destPtr = _vertColors)
+                {
+                    Buffer.MemoryCopy(
+                        srcPtr,
+                        destPtr + (_spriteCount * VertsPerSprite),
+                        VertsPerSprite * sizeof(Vector4),
+                        VertsPerSprite * sizeof(Vector4));
+                }
             }
 
             var spriteVertTexCoords = new Vector2[]
@@ -307,14 +246,17 @@ void main()
                 new Vector2(srcX / (float)texture.Width, (srcY + srcHeight) / (float)texture.Height),
             };
 
-            fixed (Vector2* srcPtr = spriteVertTexCoords)
-            fixed (Vector2* destPtr = _vertTexCoords)
+            unsafe
             {
-                Buffer.MemoryCopy(
-                    srcPtr,
-                    destPtr + (_spriteCount * VertsPerSprite),
-                    VertsPerSprite * sizeof(Vector2),
-                    VertsPerSprite * sizeof(Vector2));
+                fixed (Vector2* srcPtr = spriteVertTexCoords)
+                fixed (Vector2* destPtr = _vertTexCoords)
+                {
+                    Buffer.MemoryCopy(
+                        srcPtr,
+                        destPtr + (_spriteCount * VertsPerSprite),
+                        VertsPerSprite * sizeof(Vector2),
+                        VertsPerSprite * sizeof(Vector2));
+                }
             }
 
             _spriteCount++;
@@ -353,6 +295,15 @@ void main()
             if (_spriteCount <= 0)
                 return;
 
+            glUseProgram(_program);
+
+            glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, _vertPositions);
+            glVertexAttribPointer(1, 4, GL_FLOAT, false, 0, _vertColors);
+            glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, _vertTexCoords);
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, _textureHandle);
+
             float m11 = 2f / WindowWidth;
             float m22 = -2f / WindowHeight;
 
@@ -364,30 +315,7 @@ void main()
                 -1.0f, 1.0f, 0.0f, 1.0f,
             };
 
-            glUseProgram(_program);
-
-            fixed (void* vertPositionsPtr = _vertPositions)
-            {
-                glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, vertPositionsPtr);
-            }
-
-            fixed (void* vertColorsPtr = _vertColors)
-            {
-                glVertexAttribPointer(1, 4, GL_FLOAT, false, 0, vertColorsPtr);
-            }
-
-            fixed (void* vertTexCoordsPtr = _vertTexCoords)
-            {
-                glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, vertTexCoordsPtr);
-            }
-
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, _textureHandle);
-
-            fixed (float* transformPtr = transform)
-            {
-                glUniformMatrix4fv(_vertTransformLocation, 1, false, transformPtr);
-            }
+            glUniformMatrix4fv(_vertTransformLocation, 1, false, ref transform[0]);
 
             glUniform1i(_fragTextureLocation, 0);
 
