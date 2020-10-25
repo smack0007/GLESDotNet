@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using ImageDotNet;
 using static GLESDotNet.GLES2;
 
 namespace GLESDotNet.Samples
@@ -53,6 +54,25 @@ namespace GLESDotNet.Samples
                     throw new InvalidOperationException($"Error linking program:\n{infoLog}");
                 }
             }
+        }
+
+        public static TextureData LoadTexture(string fileName)
+        {
+            glGenTextures(1, out uint handle);
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, handle);
+
+            var image = Image.LoadPng(fileName).To<Rgba32>();
+            using (var data = image.GetDataPointer())
+            {
+                glTexImage2D(GL_TEXTURE_2D, 0, (int)GL_RGBA, image.Width, image.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.Pointer);
+            }
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)GL_LINEAR);
+
+            return new TextureData() { Handle = handle, Width = image.Width, Height = image.Height };
         }
     }
 }
