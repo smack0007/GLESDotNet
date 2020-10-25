@@ -6,7 +6,7 @@ using ImageDotNet;
 
 namespace BMFont
 {
-    public unsafe class BMFontSample : Sample
+    public unsafe class BMFontSample : GLApplication
     {
         private static uint _program;
         private static int _vertTransformLocation;

@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Numerics;
-using GLESDotNet.Samples;
 using static GLESDotNet.GLES2;
 
-namespace Sprites
+namespace GLESDotNet.Samples
 {
     public class SpriteRenderer : IDisposable
     {

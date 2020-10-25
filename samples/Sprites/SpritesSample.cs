@@ -21,7 +21,7 @@ namespace Sprites
         public Vector4 Tint { get; set; }
     }
 
-    public class SpritesSample : Sample
+    public class SpritesSample : GLApplication
     {
         private SpriteRenderer _spriteRenderer;
 
@@ -118,7 +118,5 @@ namespace Sprites
 
             _spriteRenderer.End();
         }
-
-        
     }
 }

@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace ImGuiGLESDotNet
 {
-    public unsafe class ImGuiSample : Sample
+    public unsafe class ImGuiSample : GLApplication
     {
         private uint _program;
         private int _vertProjectionLocation;

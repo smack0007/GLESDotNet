@@ -6,7 +6,7 @@ using ImageDotNet;
 
 namespace Framebuffer
 {
-    public class FramebufferSample : Sample
+    public class FramebufferSample : GLApplication
     {
         private uint _program;
         private int _fragTextureLocation;

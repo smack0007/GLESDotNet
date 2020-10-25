@@ -8,7 +8,7 @@ using System.Reflection;
 
 namespace GLESDotNet.Samples
 {
-    public abstract class Sample : IDisposable
+    public abstract class GLApplication : IDisposable
     {
         private const float TimeBetweenFrames = 1000.0f / 60.0f;
 
@@ -54,7 +54,7 @@ namespace GLESDotNet.Samples
 
         public int FrameBufferHeight { get; private set; }
 
-        public Sample(string title, int windowWidth = 800, int windowHeight = 600)
+        public GLApplication(string title, int windowWidth = 800, int windowHeight = 600)
         {
             var basePath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
             Directory.SetCurrentDirectory(basePath);
@@ -91,7 +91,7 @@ namespace GLESDotNet.Samples
             CreateContext();
         }
 
-        ~Sample()
+        ~GLApplication()
         {
             Dispose(false);
         }

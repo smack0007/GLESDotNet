@@ -5,7 +5,7 @@ using ImageDotNet;
 
 namespace Flames
 {
-    public class FlamesSample : Sample
+    public class FlamesSample : GLApplication
     {
         private static readonly uint[] _fireColors = new uint[] {
             0x00000000,

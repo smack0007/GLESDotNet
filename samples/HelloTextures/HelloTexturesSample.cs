@@ -6,7 +6,7 @@ using ImageDotNet;
 
 namespace HelloTextures
 {
-    public unsafe class HelloTexturesSample : Sample
+    public unsafe class HelloTexturesSample : GLApplication
     {
         private uint _program;
         private int _fragTextureLocation;

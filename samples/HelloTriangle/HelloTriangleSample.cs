@@ -5,7 +5,7 @@ using GLESDotNet.Samples;
 
 namespace HelloTriangle
 {
-    public class HelloTriangleSample : Sample
+    public class HelloTriangleSample : GLApplication
     {
         private static uint _program;
 
